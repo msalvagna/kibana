@@ -1220,7 +1220,7 @@ exports[`QueryStringInput Should disable autoFocus on EuiFieldText when disableA
                                 closePopover={[Function]}
                                 display="inlineBlock"
                                 hasArrow={true}
-                                id="popover"
+                                id="queryLanguageSwitcherPopover"
                                 isOpen={false}
                                 ownFocus={true}
                                 panelPaddingSize="m"
@@ -1232,7 +1232,7 @@ exports[`QueryStringInput Should disable autoFocus on EuiFieldText when disableA
                                 >
                                   <div
                                     className="euiPopover euiPopover--anchorDownRight euiPopover--withTitle"
-                                    id="popover"
+                                    id="queryLanguageSwitcherPopover"
                                     onKeyDown={[Function]}
                                     onMouseDown={[Function]}
                                     onMouseUp={[Function]}
@@ -2515,7 +2515,7 @@ exports[`QueryStringInput Should pass the query language to the language switche
                                 closePopover={[Function]}
                                 display="inlineBlock"
                                 hasArrow={true}
-                                id="popover"
+                                id="queryLanguageSwitcherPopover"
                                 isOpen={false}
                                 ownFocus={true}
                                 panelPaddingSize="m"
@@ -2527,7 +2527,7 @@ exports[`QueryStringInput Should pass the query language to the language switche
                                 >
                                   <div
                                     className="euiPopover euiPopover--anchorDownRight euiPopover--withTitle"
-                                    id="popover"
+                                    id="queryLanguageSwitcherPopover"
                                     onKeyDown={[Function]}
                                     onMouseDown={[Function]}
                                     onMouseUp={[Function]}
@@ -3810,7 +3810,7 @@ exports[`QueryStringInput Should render the given query 1`] = `
                                 closePopover={[Function]}
                                 display="inlineBlock"
                                 hasArrow={true}
-                                id="popover"
+                                id="queryLanguageSwitcherPopover"
                                 isOpen={false}
                                 ownFocus={true}
                                 panelPaddingSize="m"
@@ -3822,7 +3822,7 @@ exports[`QueryStringInput Should render the given query 1`] = `
                                 >
                                   <div
                                     className="euiPopover euiPopover--anchorDownRight euiPopover--withTitle"
-                                    id="popover"
+                                    id="queryLanguageSwitcherPopover"
                                     onKeyDown={[Function]}
                                     onMouseDown={[Function]}
                                     onMouseUp={[Function]}
