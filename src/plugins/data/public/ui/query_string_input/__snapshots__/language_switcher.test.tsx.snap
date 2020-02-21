@@ -239,7 +239,7 @@ exports[`LanguageSwitcher should toggle off if language is lucene 1`] = `
       closePopover={[Function]}
       display="inlineBlock"
       hasArrow={true}
-      id="popover"
+      id="queryLanguageSwitcherPopover"
       isOpen={false}
       ownFocus={true}
       panelPaddingSize="m"
@@ -251,7 +251,7 @@ exports[`LanguageSwitcher should toggle off if language is lucene 1`] = `
       >
         <div
           className="euiPopover euiPopover--anchorDownRight euiPopover--withTitle"
-          id="popover"
+          id="queryLanguageSwitcherPopover"
           onKeyDown={[Function]}
           onMouseDown={[Function]}
           onMouseUp={[Function]}
@@ -535,7 +535,7 @@ exports[`LanguageSwitcher should toggle on if language is kuery 1`] = `
       closePopover={[Function]}
       display="inlineBlock"
       hasArrow={true}
-      id="popover"
+      id="queryLanguageSwitcherPopover"
       isOpen={false}
       ownFocus={true}
       panelPaddingSize="m"
@@ -547,7 +547,7 @@ exports[`LanguageSwitcher should toggle on if language is kuery 1`] = `
       >
         <div
           className="euiPopover euiPopover--anchorDownRight euiPopover--withTitle"
-          id="popover"
+          id="queryLanguageSwitcherPopover"
           onKeyDown={[Function]}
           onMouseDown={[Function]}
           onMouseUp={[Function]}
