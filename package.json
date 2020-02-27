@@ -101,7 +101,7 @@
     "**/react": "^16.12.0",
     "**/react-test-renderer": "^16.12.0",
     "**/serialize-javascript": "^2.1.1",
-    "**/typescript": "3.7.2"
+    "**/typescript": "3.8.2"
   },
   "workspaces": {
     "packages": [
@@ -182,7 +182,7 @@
     "fast-deep-equal": "^3.1.1",
     "file-loader": "4.2.0",
     "font-awesome": "4.7.0",
-    "fp-ts": "^2.3.1",
+    "fp-ts": "^2.5.2",
     "getos": "^3.1.0",
     "glob": "^7.1.2",
     "glob-all": "^3.1.0",
@@ -270,7 +270,7 @@
     "tinygradient": "0.4.3",
     "tinymath": "1.2.1",
     "topojson-client": "3.0.0",
-    "tslib": "^1.9.3",
+    "tslib": "^1.11.0",
     "type-detect": "^4.0.8",
     "ui-select": "0.19.8",
     "url-loader": "2.2.0",
@@ -387,8 +387,8 @@
     "@types/uuid": "^3.4.4",
     "@types/vinyl-fs": "^2.4.11",
     "@types/zen-observable": "^0.8.0",
-    "@typescript-eslint/eslint-plugin": "^2.15.0",
-    "@typescript-eslint/parser": "^2.15.0",
+    "@typescript-eslint/eslint-plugin": "^2.21.0",
+    "@typescript-eslint/parser": "^2.21.0",
     "angular-mocks": "^1.7.9",
     "archiver": "^3.1.1",
     "axe-core": "^3.3.2",
@@ -486,7 +486,7 @@
     "supertest": "^3.1.0",
     "supertest-as-promised": "^4.0.2",
     "tree-kill": "^1.2.2",
-    "typescript": "3.7.2",
+    "typescript": "3.8.2",
     "typings-tester": "^0.3.2",
     "vinyl-fs": "^3.0.3",
     "xml2js": "^0.4.22",
