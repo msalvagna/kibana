@@ -19,7 +19,7 @@
 
 import { EuiIcon } from '@elastic/eui';
 import classNames from 'classnames';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import { QuerySuggestion } from '../../autocomplete';
 
 function getEuiIconType(type: string) {
@@ -46,13 +46,15 @@ interface Props {
   suggestion: QuerySuggestion;
   innerRef: (node: HTMLDivElement) => void;
   ariaId: string;
+  shouldDisplayDescription: boolean;
 }
 
-export const SuggestionComponent: FunctionComponent<Props> = props => {
+export function SuggestionComponent(props: Props) {
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus
     <div
       className={classNames({
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         kbnTypeahead__item: true,
         active: props.selected,
       })}
@@ -71,8 +73,10 @@ export const SuggestionComponent: FunctionComponent<Props> = props => {
           <EuiIcon type={getEuiIconType(props.suggestion.type)} />
         </div>
         <div className="kbnSuggestionItem__text">{props.suggestion.text}</div>
-        <div className="kbnSuggestionItem__description">{props.suggestion.description}</div>
+        {props.shouldDisplayDescription && (
+          <div className="kbnSuggestionItem__description">{props.suggestion.description}</div>
+        )}
       </div>
     </div>
   );
-};
+}

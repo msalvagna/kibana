@@ -6,35 +6,46 @@
 
 import {
   CLIENT_GEO_COUNTRY_ISO_CODE,
-  PROCESSOR_EVENT,
   SERVICE_NAME,
-  TRANSACTION_DURATION,
   TRANSACTION_TYPE,
-  TRANSACTION_NAME
+  TRANSACTION_NAME,
 } from '../../../../common/elasticsearch_fieldnames';
 import {
   Setup,
   SetupTimeRange,
-  SetupUIFilters
+  SetupUIFilters,
 } from '../../helpers/setup_request';
-import { rangeFilter } from '../../helpers/range_filter';
+import { rangeFilter } from '../../../../common/utils/range_filter';
 import { TRANSACTION_PAGE_LOAD } from '../../../../common/transaction_types';
+import {
+  getProcessorEventForAggregatedTransactions,
+  getTransactionDurationFieldForAggregatedTransactions,
+  getDocumentTypeFilterForAggregatedTransactions,
+} from '../../helpers/aggregated_transactions';
 
 export async function getTransactionAvgDurationByCountry({
   setup,
   serviceName,
-  transactionName
+  transactionName,
+  searchAggregatedTransactions,
 }: {
   setup: Setup & SetupTimeRange & SetupUIFilters;
   serviceName: string;
   transactionName?: string;
+  searchAggregatedTransactions: boolean;
 }) {
-  const { uiFiltersES, client, start, end, indices } = setup;
+  const { uiFiltersES, apmEventClient, start, end } = setup;
   const transactionNameFilter = transactionName
     ? [{ term: { [TRANSACTION_NAME]: transactionName } }]
     : [];
   const params = {
-    index: indices['apm_oss.transactionIndices'],
+    apm: {
+      events: [
+        getProcessorEventForAggregatedTransactions(
+          searchAggregatedTransactions
+        ),
+      ],
+    },
     body: {
       size: 0,
       query: {
@@ -42,31 +53,44 @@ export async function getTransactionAvgDurationByCountry({
           filter: [
             { term: { [SERVICE_NAME]: serviceName } },
             ...transactionNameFilter,
-            { term: { [PROCESSOR_EVENT]: 'transaction' } },
             { term: { [TRANSACTION_TYPE]: TRANSACTION_PAGE_LOAD } },
             { exists: { field: CLIENT_GEO_COUNTRY_ISO_CODE } },
             { range: rangeFilter(start, end) },
-            ...uiFiltersES
-          ]
-        }
+            ...uiFiltersES,
+            ...getDocumentTypeFilterForAggregatedTransactions(
+              searchAggregatedTransactions
+            ),
+          ],
+        },
       },
       aggs: {
         country_code: {
           terms: {
             field: CLIENT_GEO_COUNTRY_ISO_CODE,
-            size: 500
+            size: 500,
           },
           aggs: {
+            count: {
+              value_count: {
+                field: getTransactionDurationFieldForAggregatedTransactions(
+                  searchAggregatedTransactions
+                ),
+              },
+            },
             avg_duration: {
-              avg: { field: TRANSACTION_DURATION }
-            }
-          }
-        }
-      }
-    }
+              avg: {
+                field: getTransactionDurationFieldForAggregatedTransactions(
+                  searchAggregatedTransactions
+                ),
+              },
+            },
+          },
+        },
+      },
+    },
   };
 
-  const resp = await client.search(params);
+  const resp = await apmEventClient.search(params);
 
   if (!resp.aggregations) {
     return [];
@@ -74,10 +98,10 @@ export async function getTransactionAvgDurationByCountry({
 
   const buckets = resp.aggregations.country_code.buckets;
   const avgDurationsByCountry = buckets.map(
-    ({ key, doc_count, avg_duration: { value } }) => ({
+    ({ key, count, avg_duration: { value } }) => ({
       key: key as string,
-      docCount: doc_count,
-      value: value === null ? 0 : value
+      docCount: count.value,
+      value: value === null ? 0 : value,
     })
   );
 

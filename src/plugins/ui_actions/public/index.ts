@@ -19,7 +19,6 @@
 
 import { PluginInitializerContext } from '../../../core/public';
 import { UiActionsPlugin } from './plugin';
-import { UiActionsService } from './service';
 
 export function plugin(initializerContext: PluginInitializerContext) {
   return new UiActionsPlugin(initializerContext);
@@ -27,23 +26,40 @@ export function plugin(initializerContext: PluginInitializerContext) {
 
 export { UiActionsSetup, UiActionsStart } from './plugin';
 export { UiActionsServiceParams, UiActionsService } from './service';
-export { Action, createAction, IncompatibleActionError } from './actions';
+export {
+  Action,
+  ActionDefinition as UiActionsActionDefinition,
+  createAction,
+  IncompatibleActionError,
+} from './actions';
 export { buildContextMenuForActions } from './context_menu';
-export { Trigger, TriggerContext } from './triggers';
-export { TriggerContextMapping } from './types';
-
-/**
- * @deprecated
- *
- * Use `UiActionsStart['getTriggerCompatibleActions']` or
- * `UiActionsService['getTriggerCompatibleActions']` instead.
- */
-export type GetActionsCompatibleWithTrigger = UiActionsService['getTriggerCompatibleActions'];
-
-/**
- * @deprecated
- *
- * Use `UiActionsStart['executeTriggerActions']` or
- * `UiActionsService['executeTriggerActions']` instead.
- */
-export type ExecuteTriggerActions = UiActionsService['executeTriggerActions'];
+export { Presentable as UiActionsPresentable } from './util';
+export {
+  Trigger,
+  TriggerContext,
+  SELECT_RANGE_TRIGGER,
+  selectRangeTrigger,
+  VALUE_CLICK_TRIGGER,
+  valueClickTrigger,
+  APPLY_FILTER_TRIGGER,
+  applyFilterTrigger,
+  VISUALIZE_FIELD_TRIGGER,
+  visualizeFieldTrigger,
+  VISUALIZE_GEO_FIELD_TRIGGER,
+  visualizeGeoFieldTrigger,
+} from './triggers';
+export {
+  TriggerContextMapping,
+  TriggerId,
+  ActionContextMapping,
+  ActionType,
+  VisualizeFieldContext,
+  ACTION_VISUALIZE_FIELD,
+  ACTION_VISUALIZE_GEO_FIELD,
+} from './types';
+export {
+  ActionByType,
+  ActionDefinitionByType,
+  ActionExecutionContext,
+  ActionExecutionMeta,
+} from './actions';

@@ -22,9 +22,9 @@ import { Agent as HttpsAgent, ServerOptions as TlsOptions } from 'https';
 
 import apm from 'elastic-apm-node';
 import { ByteSizeValue } from '@kbn/config-schema';
-import { Server, Request, ResponseToolkit } from 'hapi';
-import { sample } from 'lodash';
-import BrowserslistUserAgent from 'browserslist-useragent';
+import { Server, Request } from 'hapi';
+import HapiProxy from 'h2o2';
+import { sampleSize } from 'lodash';
 import * as Rx from 'rxjs';
 import { take } from 'rxjs/operators';
 
@@ -39,34 +39,6 @@ export interface BasePathProxyServerOptions {
   shouldRedirectFromOldBasePath: (path: string) => boolean;
   delayUntil: () => Rx.Observable<void>;
 }
-
-// Before we proxy request to a target port we may want to wait until some
-// condition is met (e.g. until target listener is ready).
-const checkForBrowserCompat = (log: Logger) => async (request: Request, h: ResponseToolkit) => {
-  if (!request.headers['user-agent'] || process.env.BROWSERSLIST_ENV === 'production') {
-    return h.continue;
-  }
-
-  const matches = BrowserslistUserAgent.matchesUA(request.headers['user-agent'], {
-    env: 'dev',
-    allowHigherVersions: true,
-    ignoreMinor: true,
-    ignorePath: true,
-  });
-
-  if (!matches) {
-    log.warn(`
-      Request with user-agent [${request.headers['user-agent']}]
-      seems like it is coming from a browser that is not supported by the dev browserlist.
-
-      Please run Kibana with the environment variable BROWSERSLIST_ENV=production to enable
-      support for all production browsers (like IE).
-
-    `);
-  }
-
-  return h.continue;
-};
 
 export class BasePathProxyServer {
   private server?: Server;
@@ -89,7 +61,7 @@ export class BasePathProxyServer {
     httpConfig.maxPayload = new ByteSizeValue(ONE_GIGABYTE);
 
     if (!httpConfig.basePath) {
-      httpConfig.basePath = `/${sample(alphabet, 3).join('')}`;
+      httpConfig.basePath = `/${sampleSize(alphabet, 3).join('')}`;
     }
   }
 
@@ -102,7 +74,7 @@ export class BasePathProxyServer {
 
     // Register hapi plugin that adds proxying functionality. It can be configured
     // through the route configuration object (see { handler: { proxy: ... } }).
-    await this.server.register({ plugin: require('h2o2') });
+    await this.server.register([HapiProxy]);
 
     if (this.httpConfig.ssl.enabled) {
       const tlsOptions = serverOptions.tls as TlsOptions;
@@ -154,9 +126,6 @@ export class BasePathProxyServer {
       },
       method: 'GET',
       path: '/',
-      options: {
-        pre: [checkForBrowserCompat(this.log)],
-      },
     });
 
     this.server.route({
@@ -166,21 +135,19 @@ export class BasePathProxyServer {
           host: this.server.info.host,
           passThrough: true,
           port: this.devConfig.basePathProxyTargetPort,
-          protocol: this.server.info.protocol,
+          // typings mismatch. h2o2 doesn't support "socket"
+          protocol: this.server.info.protocol as HapiProxy.ProxyHandlerOptions['protocol'],
           xforward: true,
         },
       },
       method: '*',
       options: {
         pre: [
-          checkForBrowserCompat(this.log),
           // Before we proxy request to a target port we may want to wait until some
           // condition is met (e.g. until target listener is ready).
           async (request, responseToolkit) => {
             apm.setTransactionName(`${request.method.toUpperCase()} /{basePath}/{kbnPath*}`);
-            await delayUntil()
-              .pipe(take(1))
-              .toPromise();
+            await delayUntil().pipe(take(1)).toPromise();
             return responseToolkit.continue;
           },
         ],
@@ -195,7 +162,7 @@ export class BasePathProxyServer {
           agent: this.httpsAgent,
           passThrough: true,
           xforward: true,
-          mapUri: (request: Request) => ({
+          mapUri: async (request: Request) => ({
             uri: Url.format({
               hostname: request.server.info.host,
               port: this.devConfig.basePathProxyTargetPort,
@@ -210,13 +177,10 @@ export class BasePathProxyServer {
       method: '*',
       options: {
         pre: [
-          checkForBrowserCompat(this.log),
           // Before we proxy request to a target port we may want to wait until some
           // condition is met (e.g. until target listener is ready).
           async (request, responseToolkit) => {
-            await delayUntil()
-              .pipe(take(1))
-              .toPromise();
+            await delayUntil().pipe(take(1)).toPromise();
             return responseToolkit.continue;
           },
         ],

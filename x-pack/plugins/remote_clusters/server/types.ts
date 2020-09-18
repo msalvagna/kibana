@@ -4,18 +4,23 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { IRouter, ElasticsearchServiceSetup, IClusterClient } from 'kibana/server';
+import { IRouter } from 'kibana/server';
+import { PluginSetupContract as FeaturesPluginSetup } from '../../features/server';
 import { LicensingPluginSetup } from '../../licensing/server';
+import { CloudSetup } from '../../cloud/server';
 
 export interface Dependencies {
   licensing: LicensingPluginSetup;
+  cloud: CloudSetup;
+  features: FeaturesPluginSetup;
 }
 
 export interface RouteDependencies {
   router: IRouter;
   getLicenseStatus: () => LicenseStatus;
-  elasticsearchService: ElasticsearchServiceSetup;
-  elasticsearch: IClusterClient;
+  config: {
+    isCloudEnabled: boolean;
+  };
 }
 
 export interface LicenseStatus {

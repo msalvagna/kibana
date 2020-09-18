@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-export default function({ loadTestFile, getService }) {
+export default function ({ loadTestFile, getService }) {
   const esArchiver = getService('esArchiver');
 
   describe('Maps endpoints', () => {
@@ -13,8 +13,10 @@ export default function({ loadTestFile, getService }) {
     });
 
     describe('', () => {
+      loadTestFile(require.resolve('./fonts_api'));
       loadTestFile(require.resolve('./index_settings'));
       loadTestFile(require.resolve('./migrations'));
+      loadTestFile(require.resolve('./get_tile'));
     });
   });
 }

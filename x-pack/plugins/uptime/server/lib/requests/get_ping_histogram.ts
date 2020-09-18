@@ -5,10 +5,10 @@
  */
 
 import { UMElasticsearchQueryFn } from '../adapters';
-import { INDEX_NAMES, QUERY } from '../../../../../legacy/plugins/uptime/common/constants';
 import { getFilterClause } from '../helper';
-import { HistogramQueryResult } from './types';
-import { HistogramResult } from '../../../../../legacy/plugins/uptime/common/types';
+import { HistogramResult, HistogramQueryResult } from '../../../common/runtime_types';
+import { QUERY } from '../../../common/constants';
+import { getHistogramInterval } from '../helper/get_histogram_interval';
 
 export interface GetPingHistogramParams {
   /** @member dateRangeStart timestamp bounds */
@@ -16,17 +16,17 @@ export interface GetPingHistogramParams {
   /** @member dateRangeEnd timestamp bounds */
   to: string;
   /** @member filters user-defined filters */
-  filters?: string | null;
+  filters?: string;
   /** @member monitorId optional limit to monitorId */
-  monitorId?: string | null;
-  /** @member statusFilter special filter targeting the latest status of each monitor */
-  statusFilter?: string | null;
+  monitorId?: string;
+
+  bucketSize?: string;
 }
 
 export const getPingHistogram: UMElasticsearchQueryFn<
   GetPingHistogramParams,
   HistogramResult
-> = async ({ callES, from, to, filters, monitorId, statusFilter }) => {
+> = async ({ callES, dynamicSettings, from, to, filters, monitorId, bucketSize }) => {
   const boolFilters = filters ? JSON.parse(filters) : null;
   const additionalFilters = [];
   if (monitorId) {
@@ -38,7 +38,7 @@ export const getPingHistogram: UMElasticsearchQueryFn<
   const filter = getFilterClause(from, to, additionalFilters);
 
   const params = {
-    index: INDEX_NAMES.HEARTBEAT,
+    index: dynamicSettings.heartbeatIndices,
     body: {
       query: {
         bool: {
@@ -48,9 +48,11 @@ export const getPingHistogram: UMElasticsearchQueryFn<
       size: 0,
       aggs: {
         timeseries: {
-          auto_date_histogram: {
+          date_histogram: {
             field: '@timestamp',
-            buckets: QUERY.DEFAULT_BUCKET_COUNT,
+            fixed_interval:
+              bucketSize || getHistogramInterval(from, to, QUERY.DEFAULT_BUCKET_COUNT) + 'ms',
+            missing: 0,
           },
           aggs: {
             down: {
@@ -74,16 +76,16 @@ export const getPingHistogram: UMElasticsearchQueryFn<
   };
 
   const result = await callES('search', params);
-  const interval = result.aggregations.timeseries?.interval;
+  const interval = result.aggregations?.timeseries?.interval;
   const buckets: HistogramQueryResult[] = result?.aggregations?.timeseries?.buckets ?? [];
-  const histogram = buckets.map(bucket => {
+  const histogram = buckets.map((bucket) => {
     const x: number = bucket.key;
     const downCount: number = bucket.down.doc_count;
     const upCount: number = bucket.up.doc_count;
     return {
       x,
-      downCount: statusFilter && statusFilter !== 'down' ? 0 : downCount,
-      upCount: statusFilter && statusFilter !== 'up' ? 0 : upCount,
+      downCount,
+      upCount,
       y: 1,
     };
   });

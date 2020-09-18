@@ -5,13 +5,13 @@
  */
 
 import * as rt from 'io-ts';
-
 import { commonSearchSuccessResponseFieldsRT } from '../../../utils/elasticsearch_runtime_types';
 import {
+  createJobIdFilters,
   createResultTypeFilters,
   createTimeRangeFilters,
   defaultRequestParameters,
-  getMlResultIndex,
+  createDatasetsFilters,
 } from './common';
 
 export const createTopLogEntryCategoriesQuery = (
@@ -27,6 +27,7 @@ export const createTopLogEntryCategoriesQuery = (
     query: {
       bool: {
         filter: [
+          ...createJobIdFilters(logEntryCategoriesJobId),
           ...createTimeRangeFilters(startTime, endTime),
           ...createDatasetsFilters(datasets),
           {
@@ -35,7 +36,7 @@ export const createTopLogEntryCategoriesQuery = (
                 {
                   bool: {
                     filter: [
-                      ...createResultTypeFilters('model_plot'),
+                      ...createResultTypeFilters(['model_plot']),
                       {
                         range: {
                           actual: {
@@ -48,7 +49,7 @@ export const createTopLogEntryCategoriesQuery = (
                 },
                 {
                   bool: {
-                    filter: createResultTypeFilters('record'),
+                    filter: createResultTypeFilters(['record']),
                   },
                 },
               ],
@@ -100,26 +101,27 @@ export const createTopLogEntryCategoriesQuery = (
                   field: 'record_score',
                 },
               },
+              terms_dataset: {
+                terms: {
+                  field: 'partition_field_value',
+                  size: 1000,
+                },
+                aggs: {
+                  maximum_record_score: {
+                    max: {
+                      field: 'record_score',
+                    },
+                  },
+                },
+              },
             },
           },
         },
       },
     },
   },
-  index: getMlResultIndex(logEntryCategoriesJobId),
   size: 0,
 });
-
-const createDatasetsFilters = (datasets: string[]) =>
-  datasets.length > 0
-    ? [
-        {
-          terms: {
-            partition_field_value: datasets,
-          },
-        },
-      ]
-    : [];
 
 const metricAggregationRT = rt.type({
   value: rt.union([rt.number, rt.null]),
@@ -130,6 +132,15 @@ export const logEntryCategoryBucketRT = rt.type({
   doc_count: rt.number,
   filter_record: rt.type({
     maximum_record_score: metricAggregationRT,
+    terms_dataset: rt.type({
+      buckets: rt.array(
+        rt.type({
+          key: rt.string,
+          doc_count: rt.number,
+          maximum_record_score: metricAggregationRT,
+        })
+      ),
+    }),
   }),
   filter_model_plot: rt.type({
     sum_actual: metricAggregationRT,
@@ -148,7 +159,7 @@ export type LogEntryCategoryBucket = rt.TypeOf<typeof logEntryCategoryBucketRT>;
 
 export const topLogEntryCategoriesResponseRT = rt.intersection([
   commonSearchSuccessResponseFieldsRT,
-  rt.type({
+  rt.partial({
     aggregations: rt.type({
       terms_category_id: rt.type({
         buckets: rt.array(logEntryCategoryBucketRT),

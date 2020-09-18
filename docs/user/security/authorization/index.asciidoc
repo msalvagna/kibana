@@ -2,16 +2,17 @@
 [[xpack-security-authorization]]
 
 === Granting access to {kib}
-The Elastic Stack comes with the `kibana_admin` {ref}/built-in-roles.html[built-in role], which you can use to grant access to all Kibana features in all spaces. To grant users access to a subset of spaces or features, you can create a custom role that grants the desired Kibana privileges. 
+The Elastic Stack comes with the `kibana_admin` {ref}/built-in-roles.html[built-in role], which you can use to grant access to all Kibana features in all spaces. To grant users access to a subset of spaces or features, you can create a custom role that grants the desired Kibana privileges.
 
 When you assign a user multiple roles, the user receives a union of the roles’ privileges. Therefore, assigning the `kibana_admin` role in addition to a custom role that grants Kibana privileges is ineffective because `kibana_admin` has access to all the features in all spaces.
 
 NOTE: When running multiple tenants of Kibana by changing the `kibana.index` in your `kibana.yml`, you cannot use `kibana_admin` to grant access. You must create custom roles that authorize the user for that specific tenant. Although multi-tenant installations are supported, the recommended approach to securing access to Kibana segments is to grant users access to specific spaces.
 
 [role="xpack"]
+[[xpack-kibana-role-management]]
 === {kib} role management
 
-To create a role that grants {kib} privileges, go to **Management -> Security -> Roles** and click **Create role**. 
+To create a role that grants {kib} privileges, open the menu, go to *Stack Management > Security > Roles* and click **Create role**. 
 
 [[adding_kibana_privileges]]
 ==== Adding {kib} privileges
@@ -27,7 +28,9 @@ Use the **Privilege** menu to grant access to features. The default is **Custom*
 
 When using the **Customize by feature** option, you can choose either **All**, **Read** or **None** for access to each feature. As new features are added to Kibana, roles that use the custom option do not automatically get access to the new features. You must manually update the roles.
 
-NOTE: Machine Learning and Stack Monitoring rely on built-in roles to grant access. When a user is assigned the appropriate roles, the Machine Learning and Stack Monitoring application are available; otherwise, these applications are not visible.
+NOTE: *{stack-monitor-app}* relies on built-in roles to grant access. When a
+user is assigned the appropriate roles, the *{stack-monitor-app}* application is
+available; otherwise, it is not visible.
 
 To apply your changes, click **Create space privilege**. The space privilege shows up under the Kibana privileges section of the role.
 
@@ -63,7 +66,7 @@ Features are available to users when their roles grant access to the features, *
 
 Using the same role, it’s possible to assign different privileges to different spaces. After you’ve added space privileges, click **Add space privilege**. If you’ve already added privileges for either *** Global (all spaces)** or an individual space, you will not be able to select these in the **Spaces** selection control.
 
-Additionally, if you’ve already assigned privileges at *** Global (all spaces)**, you are only able to assign additional privileges to individual spaces. Similar to the behavior of multiple roles granting the union of all privileges, space privileges are also a union. If you’ve already granted the user the **All** privilege at *** Global (all spaces)**, you’re not able to restrict the role to only the **Read** privilege at an individual space. 
+Additionally, if you’ve already assigned privileges at *** Global (all spaces)**, you are only able to assign additional privileges to individual spaces. Similar to the behavior of multiple roles granting the union of all privileges, space privileges are also a union. If you’ve already granted the user the **All** privilege at *** Global (all spaces)**, you’re not able to restrict the role to only the **Read** privilege at an individual space.
 
 
 ==== Privilege summary
@@ -111,4 +114,3 @@ image::user/security/images/privilege-example-2.png[Privilege example 2]
 
 [role="screenshot"]
 image::user/security/images/privilege-example-3.png[Privilege example 3]
-

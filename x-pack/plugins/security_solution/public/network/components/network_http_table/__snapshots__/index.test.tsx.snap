@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NetworkHttp Table Component rendering it renders the default NetworkHttp table 1`] = `null`;

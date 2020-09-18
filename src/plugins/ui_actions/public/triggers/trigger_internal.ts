@@ -17,12 +17,10 @@
  * under the License.
  */
 
-import { TriggerContext, Trigger } from './trigger';
+import { Trigger } from './trigger';
 import { TriggerContract } from './trigger_contract';
 import { UiActionsService } from '../service';
-import { Action } from '../actions';
-import { buildContextMenuForActions, openContextMenu } from '../context_menu';
-import { TriggerId } from '../types';
+import { TriggerId, TriggerContextMapping } from '../types';
 
 /**
  * Internal representation of a trigger kept for consumption only internally
@@ -33,7 +31,7 @@ export class TriggerInternal<T extends TriggerId> {
 
   constructor(public readonly service: UiActionsService, public readonly trigger: Trigger<T>) {}
 
-  public async execute(context: TriggerContext<T>) {
+  public async execute(context: TriggerContextMapping[T]) {
     const triggerId = this.trigger.id;
     const actions = await this.service.getTriggerCompatibleActions!(triggerId, context);
 
@@ -43,34 +41,14 @@ export class TriggerInternal<T extends TriggerId> {
       );
     }
 
-    if (actions.length === 1) {
-      await this.executeSingleAction(actions[0], context);
-      return;
-    }
-
-    await this.executeMultipleActions(actions, context);
-  }
-
-  private async executeSingleAction(action: Action<TriggerContext<T>>, context: TriggerContext<T>) {
-    const href = action.getHref && action.getHref(context);
-
-    if (href) {
-      window.location.href = href;
-      return;
-    }
-
-    await action.execute(context);
-  }
-
-  private async executeMultipleActions(
-    actions: Array<Action<TriggerContext<T>>>,
-    context: TriggerContext<T>
-  ) {
-    const panel = await buildContextMenuForActions({
-      actions,
-      actionContext: context,
-      closeMenu: () => session.close(),
-    });
-    const session = openContextMenu([panel]);
+    await Promise.all([
+      actions.map((action) =>
+        this.service.executionService.execute({
+          action,
+          context,
+          trigger: this.trigger,
+        })
+      ),
+    ]);
   }
 }

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { monaco } from '@kbn/ui-shared-deps/monaco';
+import { monaco } from '@kbn/monaco';
 
 import darkTheme from '@elastic/eui/dist/eui_theme_dark.json';
 import lightTheme from '@elastic/eui/dist/eui_theme_light.json';
@@ -101,6 +101,11 @@ export function createTheme(
       'editor.selectionBackground': selectionBackgroundColor,
       'editorWidget.border': euiTheme.euiColorLightShade,
       'editorWidget.background': euiTheme.euiColorLightestShade,
+      'editorCursor.foreground': euiTheme.euiColorDarkestShade,
+      'editorSuggestWidget.selectedBackground': euiTheme.euiColorLightShade,
+      'list.hoverBackground': euiTheme.euiColorLightShade,
+      'list.highlightForeground': euiTheme.euiColorPrimary,
+      'editor.lineHighlightBorder': euiTheme.euiColorLightestShade,
     },
   };
 }

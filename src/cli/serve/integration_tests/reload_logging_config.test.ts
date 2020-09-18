@@ -26,8 +26,7 @@ import Del from 'del';
 import * as Rx from 'rxjs';
 import { map, filter, take } from 'rxjs/operators';
 import { safeDump } from 'js-yaml';
-
-import { getConfigFromFiles } from '../../../core/server/config/read_config';
+import { getConfigFromFiles } from '@kbn/config';
 
 const legacyConfig = follow('__fixtures__/reload_logging_config/kibana.test.yml');
 const configFileLogConsole = follow(
@@ -70,7 +69,7 @@ function watchFileUntil(path: string, matcher: RegExp, timeout: number) {
 }
 
 function containsJsonOnly(content: string[]) {
-  return content.every(line => line.startsWith('{'));
+  return content.every((line) => line.startsWith('{'));
 }
 
 function createConfigManager(configPath: string) {
@@ -83,181 +82,167 @@ function createConfigManager(configPath: string) {
   };
 }
 
-describe('Server logging configuration', function() {
-  let child: Child.ChildProcess;
+describe('Server logging configuration', function () {
+  let child: undefined | Child.ChildProcess;
+
   beforeEach(() => {
     Fs.mkdirSync(tempDir, { recursive: true });
   });
 
   afterEach(async () => {
     if (child !== undefined) {
-      child.kill();
-      // wait for child to be killed otherwise jest complains that process not finished
-      await new Promise(res => setTimeout(res, 1000));
+      const exitPromise = new Promise((resolve) => child?.once('exit', resolve));
+      child.kill('SIGKILL');
+      await exitPromise;
     }
+
     Del.sync(tempDir, { force: true });
   });
 
-  const isWindows = /^win/.test(process.platform);
-  if (isWindows) {
+  if (process.platform.startsWith('win')) {
     it('SIGHUP is not a feature of Windows.', () => {
       // nothing to do for Windows
     });
-  } else {
-    describe('legacy logging', () => {
-      it(
-        'should be reloadable via SIGHUP process signaling',
-        async function() {
-          const configFilePath = Path.resolve(tempDir, 'kibana.yml');
-          Fs.copyFileSync(legacyConfig, configFilePath);
-
-          child = Child.spawn(process.execPath, [
-            kibanaPath,
-            '--oss',
-            '--config',
-            configFilePath,
-            '--verbose',
-          ]);
-
-          const message$ = Rx.fromEvent(child.stdout, 'data').pipe(
-            map(messages =>
-              String(messages)
-                .split('\n')
-                .filter(Boolean)
-            )
-          );
-
-          await message$
-            .pipe(
-              // We know the sighup handler will be registered before this message logged
-              filter(messages => messages.some(m => m.includes('setting up root'))),
-              take(1)
-            )
-            .toPromise();
-
-          const lastMessage = await message$.pipe(take(1)).toPromise();
-          expect(containsJsonOnly(lastMessage)).toBe(true);
-
-          createConfigManager(configFilePath).modify(oldConfig => {
-            oldConfig.logging.json = false;
-            return oldConfig;
-          });
-
-          child.kill('SIGHUP');
-
-          await message$
-            .pipe(
-              filter(messages => !containsJsonOnly(messages)),
-              take(1)
-            )
-            .toPromise();
-        },
-        minute
-      );
-
-      it(
-        'should recreate file handle on SIGHUP',
-        async function() {
-          const logPath = Path.resolve(tempDir, 'kibana.log');
-          const logPathArchived = Path.resolve(tempDir, 'kibana_archive.log');
-
-          child = Child.spawn(process.execPath, [
-            kibanaPath,
-            '--oss',
-            '--config',
-            legacyConfig,
-            '--logging.dest',
-            logPath,
-            '--verbose',
-          ]);
-
-          await watchFileUntil(logPath, /setting up root/, 30 * second);
-          // once the server is running, archive the log file and issue SIGHUP
-          Fs.renameSync(logPath, logPathArchived);
-          child.kill('SIGHUP');
-
-          await watchFileUntil(
-            logPath,
-            /Reloaded logging configuration due to SIGHUP/,
-            30 * second
-          );
-        },
-        minute
-      );
-    });
-
-    describe('platform logging', () => {
-      it(
-        'should be reloadable via SIGHUP process signaling',
-        async function() {
-          const configFilePath = Path.resolve(tempDir, 'kibana.yml');
-          Fs.copyFileSync(configFileLogConsole, configFilePath);
-
-          child = Child.spawn(process.execPath, [kibanaPath, '--oss', '--config', configFilePath]);
-
-          const message$ = Rx.fromEvent(child.stdout, 'data').pipe(
-            map(messages =>
-              String(messages)
-                .split('\n')
-                .filter(Boolean)
-            )
-          );
-
-          await message$
-            .pipe(
-              // We know the sighup handler will be registered before this message logged
-              filter(messages => messages.some(m => m.includes('setting up root'))),
-              take(1)
-            )
-            .toPromise();
-
-          const lastMessage = await message$.pipe(take(1)).toPromise();
-          expect(containsJsonOnly(lastMessage)).toBe(true);
-
-          createConfigManager(configFilePath).modify(oldConfig => {
-            oldConfig.logging.appenders.console.layout.kind = 'pattern';
-            return oldConfig;
-          });
-          child.kill('SIGHUP');
-
-          await message$
-            .pipe(
-              filter(messages => !containsJsonOnly(messages)),
-              take(1)
-            )
-            .toPromise();
-        },
-        30 * second
-      );
-      it(
-        'should recreate file handle on SIGHUP',
-        async function() {
-          const configFilePath = Path.resolve(tempDir, 'kibana.yml');
-          Fs.copyFileSync(configFileLogFile, configFilePath);
-
-          const logPath = Path.resolve(tempDir, 'kibana.log');
-          const logPathArchived = Path.resolve(tempDir, 'kibana_archive.log');
-
-          createConfigManager(configFilePath).modify(oldConfig => {
-            oldConfig.logging.appenders.file.path = logPath;
-            return oldConfig;
-          });
-
-          child = Child.spawn(process.execPath, [kibanaPath, '--oss', '--config', configFilePath]);
-
-          await watchFileUntil(logPath, /setting up root/, 30 * second);
-          // once the server is running, archive the log file and issue SIGHUP
-          Fs.renameSync(logPath, logPathArchived);
-          child.kill('SIGHUP');
-
-          await watchFileUntil(
-            logPath,
-            /Reloaded logging configuration due to SIGHUP/,
-            30 * second
-          );
-        },
-        minute
-      );
-    });
+    return;
   }
+
+  describe('legacy logging', () => {
+    it(
+      'should be reloadable via SIGHUP process signaling',
+      async function () {
+        const configFilePath = Path.resolve(tempDir, 'kibana.yml');
+        Fs.copyFileSync(legacyConfig, configFilePath);
+
+        child = Child.spawn(process.execPath, [
+          kibanaPath,
+          '--oss',
+          '--config',
+          configFilePath,
+          '--verbose',
+        ]);
+
+        const message$ = Rx.fromEvent(child.stdout, 'data').pipe(
+          map((messages) => String(messages).split('\n').filter(Boolean))
+        );
+
+        await message$
+          .pipe(
+            // We know the sighup handler will be registered before this message logged
+            filter((messages) => messages.some((m) => m.includes('setting up root'))),
+            take(1)
+          )
+          .toPromise();
+
+        const lastMessage = await message$.pipe(take(1)).toPromise();
+        expect(containsJsonOnly(lastMessage)).toBe(true);
+
+        createConfigManager(configFilePath).modify((oldConfig) => {
+          oldConfig.logging.json = false;
+          return oldConfig;
+        });
+
+        child.kill('SIGHUP');
+
+        await message$
+          .pipe(
+            filter((messages) => !containsJsonOnly(messages)),
+            take(1)
+          )
+          .toPromise();
+      },
+      minute
+    );
+
+    it(
+      'should recreate file handle on SIGHUP',
+      async function () {
+        const logPath = Path.resolve(tempDir, 'kibana.log');
+        const logPathArchived = Path.resolve(tempDir, 'kibana_archive.log');
+
+        child = Child.spawn(process.execPath, [
+          kibanaPath,
+          '--oss',
+          '--config',
+          legacyConfig,
+          '--logging.dest',
+          logPath,
+          '--verbose',
+        ]);
+
+        await watchFileUntil(logPath, /setting up root/, 30 * second);
+        // once the server is running, archive the log file and issue SIGHUP
+        Fs.renameSync(logPath, logPathArchived);
+        child.kill('SIGHUP');
+
+        await watchFileUntil(logPath, /Reloaded logging configuration due to SIGHUP/, 30 * second);
+      },
+      minute
+    );
+  });
+
+  describe('platform logging', () => {
+    it(
+      'should be reloadable via SIGHUP process signaling',
+      async function () {
+        const configFilePath = Path.resolve(tempDir, 'kibana.yml');
+        Fs.copyFileSync(configFileLogConsole, configFilePath);
+
+        child = Child.spawn(process.execPath, [kibanaPath, '--oss', '--config', configFilePath]);
+
+        const message$ = Rx.fromEvent(child.stdout, 'data').pipe(
+          map((messages) => String(messages).split('\n').filter(Boolean))
+        );
+
+        await message$
+          .pipe(
+            // We know the sighup handler will be registered before this message logged
+            filter((messages) => messages.some((m) => m.includes('setting up root'))),
+            take(1)
+          )
+          .toPromise();
+
+        const lastMessage = await message$.pipe(take(1)).toPromise();
+        expect(containsJsonOnly(lastMessage)).toBe(true);
+
+        createConfigManager(configFilePath).modify((oldConfig) => {
+          oldConfig.logging.appenders.console.layout.kind = 'pattern';
+          return oldConfig;
+        });
+        child.kill('SIGHUP');
+
+        await message$
+          .pipe(
+            filter((messages) => !containsJsonOnly(messages)),
+            take(1)
+          )
+          .toPromise();
+      },
+      30 * second
+    );
+    it(
+      'should recreate file handle on SIGHUP',
+      async function () {
+        const configFilePath = Path.resolve(tempDir, 'kibana.yml');
+        Fs.copyFileSync(configFileLogFile, configFilePath);
+
+        const logPath = Path.resolve(tempDir, 'kibana.log');
+        const logPathArchived = Path.resolve(tempDir, 'kibana_archive.log');
+
+        createConfigManager(configFilePath).modify((oldConfig) => {
+          oldConfig.logging.appenders.file.path = logPath;
+          return oldConfig;
+        });
+
+        child = Child.spawn(process.execPath, [kibanaPath, '--oss', '--config', configFilePath]);
+
+        await watchFileUntil(logPath, /setting up root/, 30 * second);
+        // once the server is running, archive the log file and issue SIGHUP
+        Fs.renameSync(logPath, logPathArchived);
+        child.kill('SIGHUP');
+
+        await watchFileUntil(logPath, /Reloaded logging configuration due to SIGHUP/, 30 * second);
+      },
+      minute
+    );
+  });
 });

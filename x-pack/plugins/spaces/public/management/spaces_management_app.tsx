@@ -6,9 +6,10 @@
 
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
-import { HashRouter as Router, Route, Switch, useParams } from 'react-router-dom';
+import { Router, Route, Switch, useParams } from 'react-router-dom';
 import { i18n } from '@kbn/i18n';
-import { CoreSetup } from 'src/core/public';
+import { StartServicesAccessor } from 'src/core/public';
+import { RedirectAppLinks } from '../../../../../src/plugins/kibana_react/public';
 import { SecurityLicense } from '../../../security/public';
 import { RegisterManagementAppArgs } from '../../../../../src/plugins/management/public';
 import { PluginsStart } from '../plugin';
@@ -18,7 +19,7 @@ import { ManageSpacePage } from './edit_space';
 import { Space } from '..';
 
 interface CreateParams {
-  getStartServices: CoreSetup<PluginsStart>['getStartServices'];
+  getStartServices: StartServicesAccessor<PluginsStart>;
   spacesManager: SpacesManager;
   securityLicense?: SecurityLicense;
 }
@@ -28,18 +29,22 @@ export const spacesManagementApp = Object.freeze({
   create({ getStartServices, spacesManager, securityLicense }: CreateParams) {
     return {
       id: this.id,
-      order: 10,
+      order: 2,
       title: i18n.translate('xpack.spaces.displayName', {
         defaultMessage: 'Spaces',
       }),
-      async mount({ basePath, element, setBreadcrumbs }) {
-        const [{ http, notifications, i18n: i18nStart, application }] = await getStartServices();
+
+      async mount({ element, setBreadcrumbs, history }) {
+        const [
+          { notifications, i18n: i18nStart, application },
+          { features },
+        ] = await getStartServices();
         const spacesBreadcrumbs = [
           {
             text: i18n.translate('xpack.spaces.management.breadcrumb', {
               defaultMessage: 'Spaces',
             }),
-            href: `#${basePath}`,
+            href: `/`,
           },
         ];
 
@@ -48,9 +53,11 @@ export const spacesManagementApp = Object.freeze({
           return (
             <SpacesGridPage
               capabilities={application.capabilities}
-              http={http}
+              getFeatures={features.getFeatures}
               notifications={notifications}
               spacesManager={spacesManager}
+              history={history}
+              getUrlForApp={application.getUrlForApp}
               securityEnabled={securityLicense?.getFeatures().showLinks ?? false}
             />
           );
@@ -69,9 +76,11 @@ export const spacesManagementApp = Object.freeze({
           return (
             <ManageSpacePage
               capabilities={application.capabilities}
-              http={http}
+              getFeatures={features.getFeatures}
               notifications={notifications}
               spacesManager={spacesManager}
+              history={history}
+              getUrlForApp={application.getUrlForApp}
               securityEnabled={securityLicense?.getFeatures().showLinks ?? false}
             />
           );
@@ -85,7 +94,7 @@ export const spacesManagementApp = Object.freeze({
               ...spacesBreadcrumbs,
               {
                 text: space.name,
-                href: `#${basePath}/edit/${encodeURIComponent(space.id)}`,
+                href: `/edit/${encodeURIComponent(space.id)}`,
               },
             ]);
           };
@@ -93,11 +102,13 @@ export const spacesManagementApp = Object.freeze({
           return (
             <ManageSpacePage
               capabilities={application.capabilities}
-              http={http}
+              getFeatures={features.getFeatures}
               notifications={notifications}
               spacesManager={spacesManager}
               spaceId={spaceId}
               onLoadSpace={onLoadSpace}
+              history={history}
+              getUrlForApp={application.getUrlForApp}
               securityEnabled={securityLicense?.getFeatures().showLinks ?? false}
             />
           );
@@ -105,19 +116,21 @@ export const spacesManagementApp = Object.freeze({
 
         render(
           <i18nStart.Context>
-            <Router basename={basePath}>
-              <Switch>
-                <Route path="/" exact>
-                  <SpacesGridPageWithBreadcrumbs />
-                </Route>
-                <Route path="/create">
-                  <CreateSpacePageWithBreadcrumbs />
-                </Route>
-                <Route path="/edit/:spaceId">
-                  <EditSpacePageWithBreadcrumbs />
-                </Route>
-              </Switch>
-            </Router>
+            <RedirectAppLinks application={application}>
+              <Router history={history}>
+                <Switch>
+                  <Route path={['', '/']} exact>
+                    <SpacesGridPageWithBreadcrumbs />
+                  </Route>
+                  <Route path="/create">
+                    <CreateSpacePageWithBreadcrumbs />
+                  </Route>
+                  <Route path="/edit/:spaceId">
+                    <EditSpacePageWithBreadcrumbs />
+                  </Route>
+                </Switch>
+              </Router>
+            </RedirectAppLinks>
           </i18nStart.Context>,
           element
         );

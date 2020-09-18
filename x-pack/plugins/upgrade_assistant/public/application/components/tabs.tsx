@@ -4,7 +4,8 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { findIndex, get, set } from 'lodash';
+import { set } from '@elastic/safer-lodash-set';
+import { findIndex, get } from 'lodash';
 import React from 'react';
 
 import {
@@ -14,7 +15,8 @@ import {
   EuiTabbedContent,
   EuiTabbedContentTab,
 } from '@elastic/eui';
-import { FormattedMessage, injectI18n } from '@kbn/i18n/react';
+import { i18n } from '@kbn/i18n';
+import { FormattedMessage } from '@kbn/i18n/react';
 import { HttpSetup } from 'src/core/public';
 
 import { UpgradeAssistantStatus } from '../../../common/types';
@@ -38,9 +40,11 @@ interface TabsState {
   clusterUpgradeState: ClusterUpgradeState;
 }
 
-type Props = ReactIntl.InjectedIntlProps & { http: HttpSetup };
+interface Props {
+  http: HttpSetup;
+}
 
-export class UpgradeAssistantTabsUI extends React.Component<Props, TabsState> {
+export class UpgradeAssistantTabs extends React.Component<Props, TabsState> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -172,7 +176,6 @@ export class UpgradeAssistantTabsUI extends React.Component<Props, TabsState> {
   };
 
   private get tabs() {
-    const { intl } = this.props;
     const { loadingError, loadingState, checkupData } = this.state;
     const commonProps: UpgradeAssistantTabProps = {
       loadingError,
@@ -186,24 +189,21 @@ export class UpgradeAssistantTabsUI extends React.Component<Props, TabsState> {
     return [
       {
         id: 'overview',
-        name: intl.formatMessage({
-          id: 'xpack.upgradeAssistant.overviewTab.overviewTabTitle',
+        name: i18n.translate('xpack.upgradeAssistant.overviewTab.overviewTabTitle', {
           defaultMessage: 'Overview',
         }),
         content: <OverviewTab checkupData={checkupData} {...commonProps} />,
       },
       {
         id: 'cluster',
-        name: intl.formatMessage({
-          id: 'xpack.upgradeAssistant.checkupTab.clusterTabLabel',
+        name: i18n.translate('xpack.upgradeAssistant.checkupTab.clusterTabLabel', {
           defaultMessage: 'Cluster',
         }),
         content: (
           <CheckupTab
             key="cluster"
             deprecations={checkupData ? checkupData.cluster : undefined}
-            checkupLabel={intl.formatMessage({
-              id: 'xpack.upgradeAssistant.tabs.checkupTab.clusterLabel',
+            checkupLabel={i18n.translate('xpack.upgradeAssistant.tabs.checkupTab.clusterLabel', {
               defaultMessage: 'cluster',
             })}
             {...commonProps}
@@ -212,16 +212,14 @@ export class UpgradeAssistantTabsUI extends React.Component<Props, TabsState> {
       },
       {
         id: 'indices',
-        name: intl.formatMessage({
-          id: 'xpack.upgradeAssistant.checkupTab.indicesTabLabel',
+        name: i18n.translate('xpack.upgradeAssistant.checkupTab.indicesTabLabel', {
           defaultMessage: 'Indices',
         }),
         content: (
           <CheckupTab
             key="indices"
             deprecations={checkupData ? checkupData.indices : undefined}
-            checkupLabel={intl.formatMessage({
-              id: 'xpack.upgradeAssistant.checkupTab.indexLabel',
+            checkupLabel={i18n.translate('xpack.upgradeAssistant.checkupTab.indexLabel', {
               defaultMessage: 'index',
             })}
             showBackupWarning
@@ -249,5 +247,3 @@ export class UpgradeAssistantTabsUI extends React.Component<Props, TabsState> {
     this.setState({ telemetryState: TelemetryState.Complete });
   }
 }
-
-export const UpgradeAssistantTabs = injectI18n(UpgradeAssistantTabsUI);

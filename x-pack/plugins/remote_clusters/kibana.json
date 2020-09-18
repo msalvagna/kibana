@@ -1,5 +1,5 @@
 {
-  "id": "remote_clusters",
+  "id": "remoteClusters",
   "version": "kibana",
   "configPath": [
     "xpack",
@@ -7,11 +7,18 @@
   ],
   "requiredPlugins": [
     "licensing",
-    "management"
+    "management",
+    "indexManagement",
+    "features"
   ],
   "optionalPlugins": [
-    "usageCollection"
+    "usageCollection",
+    "cloud"
   ],
   "server": true,
-  "ui": true
+  "ui": true,
+  "requiredBundles": [
+    "kibanaReact",
+    "esUiShared"
+  ]
 }

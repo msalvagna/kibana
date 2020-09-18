@@ -17,7 +17,8 @@
  * under the License.
  */
 
-import { PluginInitializerContext } from '../../../core/server';
+import { PluginConfigDescriptor, PluginInitializerContext } from '../../../core/server';
+import { ConfigSchema, configSchema } from '../config';
 import { DataServerPlugin, DataPluginSetup, DataPluginStart } from './plugin';
 
 import {
@@ -85,7 +86,6 @@ import {
   BoolFormat,
   BytesFormat,
   ColorFormat,
-  DateNanosFormat,
   DurationFormat,
   IpFormat,
   NumberFormat,
@@ -96,17 +96,14 @@ import {
   UrlFormat,
   StringFormat,
   TruncateFormat,
-  serializeFieldFormat,
 } from '../common/field_formats';
 
 export const fieldFormats = {
   FieldFormatsRegistry,
   FieldFormat,
-  serializeFieldFormat,
   BoolFormat,
   BytesFormat,
   ColorFormat,
-  DateNanosFormat,
   DurationFormat,
   IpFormat,
   NumberFormat,
@@ -145,14 +142,112 @@ export {
   ES_FIELD_TYPES,
   KBN_FIELD_TYPES,
   IndexPatternAttributes,
+  UI_SETTINGS,
 } from '../common';
 
 /**
  * Search
  */
 
-export { IRequestTypesMap, IResponseTypesMap } from './search';
-export * from './search';
+import {
+  // aggs
+  CidrMask,
+  intervalOptions,
+  isNumberType,
+  isStringType,
+  isType,
+  parentPipelineType,
+  propFilter,
+  siblingPipelineType,
+  termsAggFilter,
+  dateHistogramInterval,
+  InvalidEsCalendarIntervalError,
+  InvalidEsIntervalFormatError,
+  Ipv4Address,
+  isValidEsInterval,
+  isValidInterval,
+  parseEsInterval,
+  parseInterval,
+  toAbsoluteDates,
+  // expressions utils
+  getRequestInspectorStats,
+  getResponseInspectorStats,
+  // tabify
+  tabifyAggResponse,
+  tabifyGetColumns,
+} from '../common';
+
+export {
+  // aggs
+  AggGroupLabels,
+  AggGroupName,
+  AggGroupNames,
+  AggParam,
+  AggParamOption,
+  AggParamType,
+  AggConfigOptions,
+  BUCKET_TYPES,
+  EsaggsExpressionFunctionDefinition,
+  IAggConfig,
+  IAggConfigs,
+  IAggType,
+  IFieldParamType,
+  IMetricAggType,
+  METRIC_TYPES,
+  OptionedParamType,
+  OptionedValueProp,
+  ParsedInterval,
+  // search
+  ISearchOptions,
+  IEsSearchRequest,
+  IEsSearchResponse,
+  ES_SEARCH_STRATEGY,
+  // tabify
+  TabbedAggColumn,
+  TabbedAggRow,
+  TabbedTable,
+} from '../common';
+
+export {
+  ISearchStrategy,
+  ISearchSetup,
+  ISearchStart,
+  toSnakeCase,
+  getDefaultSearchParams,
+  getShardTimeout,
+  getTotalLoaded,
+  shimHitsTotal,
+  usageProvider,
+  SearchUsage,
+} from './search';
+
+// Search namespace
+export const search = {
+  aggs: {
+    CidrMask,
+    dateHistogramInterval,
+    intervalOptions,
+    InvalidEsCalendarIntervalError,
+    InvalidEsIntervalFormatError,
+    Ipv4Address,
+    isNumberType,
+    isStringType,
+    isType,
+    isValidEsInterval,
+    isValidInterval,
+    parentPipelineType,
+    parseEsInterval,
+    parseInterval,
+    propFilter,
+    siblingPipelineType,
+    termsAggFilter,
+    toAbsoluteDates,
+  },
+  getRequestInspectorStats,
+  getResponseInspectorStats,
+  tabifyAggResponse,
+  tabifyGetColumns,
+};
 
 /**
  * Types to be shared externally
@@ -164,6 +259,7 @@ export {
   castEsToKbnFieldTypeName,
   // query
   Filter,
+  getTime,
   Query,
   // timefilter
   RefreshInterval,
@@ -177,7 +273,7 @@ export {
  * @public
  */
 
-export function plugin(initializerContext: PluginInitializerContext) {
+export function plugin(initializerContext: PluginInitializerContext<ConfigSchema>) {
   return new DataServerPlugin(initializerContext);
 }
 
@@ -185,4 +281,11 @@ export {
   DataServerPlugin as Plugin,
   DataPluginSetup as PluginSetup,
   DataPluginStart as PluginStart,
+};
+
+export const config: PluginConfigDescriptor<ConfigSchema> = {
+  exposeToBrowser: {
+    autocomplete: true,
+  },
+  schema: configSchema,
 };

@@ -4,10 +4,10 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { Feature } from '../../../../features/common';
+import { KibanaFeatureConfig } from '../../../../features/common';
 
 import { Space } from '../..';
 
-export function getEnabledFeatures(features: Feature[], space: Partial<Space>) {
-  return features.filter(feature => !(space.disabledFeatures || []).includes(feature.id));
+export function getEnabledFeatures(features: KibanaFeatureConfig[], space: Partial<Space>) {
+  return features.filter((feature) => !(space.disabledFeatures || []).includes(feature.id));
 }

@@ -20,8 +20,8 @@ import {
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
-import { Capabilities, HttpStart, NotificationsStart } from 'src/core/public';
-import { Feature } from '../../../../features/public';
+import { ApplicationStart, Capabilities, NotificationsStart, ScopedHistory } from 'src/core/public';
+import { KibanaFeature, FeaturesPluginStart } from '../../../../features/public';
 import { isReservedSpace } from '../../../common';
 import { DEFAULT_SPACE_ID } from '../../../common/constants';
 import { Space } from '../../../common/model/space';
@@ -32,22 +32,24 @@ import { ConfirmDeleteModal } from '../components/confirm_delete_modal';
 import { SecureSpaceMessage } from '../components/secure_space_message';
 import { UnauthorizedPrompt } from '../components/unauthorized_prompt';
 import { getEnabledFeatures } from '../lib/feature_utils';
+import { reactRouterNavigate } from '../../../../../../src/plugins/kibana_react/public';
 
 interface Props {
   spacesManager: SpacesManager;
   notifications: NotificationsStart;
-  http: HttpStart;
+  getFeatures: FeaturesPluginStart['getFeatures'];
   capabilities: Capabilities;
   securityEnabled: boolean;
+  history: ScopedHistory;
+  getUrlForApp: ApplicationStart['getUrlForApp'];
 }
 
 interface State {
   spaces: Space[];
-  features: Feature[];
+  features: KibanaFeature[];
   loading: boolean;
   showConfirmDeleteModal: boolean;
   selectedSpace: Space | null;
-  error: Error | null;
 }
 
 export class SpacesGridPage extends Component<Props, State> {
@@ -59,7 +61,6 @@ export class SpacesGridPage extends Component<Props, State> {
       loading: true,
       showConfirmDeleteModal: false,
       selectedSpace: null,
-      error: null,
     };
   }
 
@@ -73,7 +74,9 @@ export class SpacesGridPage extends Component<Props, State> {
     return (
       <div className="spcGridPage" data-test-subj="spaces-grid-page">
         <EuiPageContent horizontalPosition="center">{this.getPageContent()}</EuiPageContent>
-        {this.props.securityEnabled && <SecureSpaceMessage />}
+        {this.props.securityEnabled && (
+          <SecureSpaceMessage getUrlForApp={this.props.getUrlForApp} />
+        )}
         {this.getConfirmDeleteModal()}
       </div>
     );
@@ -128,9 +131,7 @@ export class SpacesGridPage extends Component<Props, State> {
                 id="xpack.spaces.management.spacesGridPage.loadingTitle"
                 defaultMessage="loading…"
               />
-            ) : (
-              undefined
-            )
+            ) : undefined
           }
         />
       </Fragment>
@@ -139,7 +140,11 @@ export class SpacesGridPage extends Component<Props, State> {
 
   public getPrimaryActionButton() {
     return (
-      <EuiButton fill href={`#/management/kibana/spaces/create`}>
+      <EuiButton
+        fill
+        {...reactRouterNavigate(this.props.history, '/create')}
+        data-test-subj="createSpace"
+      >
         <FormattedMessage
           id="xpack.spaces.management.spacesGridPage.createSpaceButtonLabel"
           defaultMessage="Create a space"
@@ -178,10 +183,14 @@ export class SpacesGridPage extends Component<Props, State> {
       return;
     }
 
+    this.setState({
+      showConfirmDeleteModal: false,
+    });
+
     try {
       await spacesManager.deleteSpace(space);
     } catch (error) {
-      const { message: errorMessage = '' } = error.data || {};
+      const { message: errorMessage = '' } = error.data || error.body || {};
 
       this.props.notifications.toasts.addDanger(
         i18n.translate('xpack.spaces.management.spacesGridPage.errorDeletingSpaceErrorMessage', {
@@ -191,11 +200,8 @@ export class SpacesGridPage extends Component<Props, State> {
           },
         })
       );
+      return;
     }
-
-    this.setState({
-      showConfirmDeleteModal: false,
-    });
 
     this.loadGrid();
 
@@ -211,7 +217,7 @@ export class SpacesGridPage extends Component<Props, State> {
   };
 
   public loadGrid = async () => {
-    const { spacesManager, http } = this.props;
+    const { spacesManager, getFeatures, notifications } = this.props;
 
     this.setState({
       loading: true,
@@ -220,10 +226,9 @@ export class SpacesGridPage extends Component<Props, State> {
     });
 
     const getSpaces = spacesManager.getSpaces();
-    const getFeatures = http.get('/api/features');
 
     try {
-      const [spaces, features] = await Promise.all([getSpaces, getFeatures]);
+      const [spaces, features] = await Promise.all([getSpaces, getFeatures()]);
       this.setState({
         loading: false,
         spaces,
@@ -232,7 +237,11 @@ export class SpacesGridPage extends Component<Props, State> {
     } catch (error) {
       this.setState({
         loading: false,
-        error,
+      });
+      notifications.toasts.addError(error, {
+        title: i18n.translate('xpack.spaces.management.spacesGridPage.errorTitle', {
+          defaultMessage: 'Error loading spaces',
+        }),
       });
     }
   };
@@ -244,7 +253,7 @@ export class SpacesGridPage extends Component<Props, State> {
         name: '',
         width: '50px',
         render: (value: string, record: Space) => (
-          <EuiLink href={this.getEditSpacePath(record)}>
+          <EuiLink {...reactRouterNavigate(this.props.history, this.getEditSpacePath(record))}>
             <SpaceAvatar space={record} size="s" />
           </EuiLink>
         ),
@@ -256,7 +265,9 @@ export class SpacesGridPage extends Component<Props, State> {
         }),
         sortable: true,
         render: (value: string, record: Space) => (
-          <EuiLink href={this.getEditSpacePath(record)}>{value}</EuiLink>
+          <EuiLink {...reactRouterNavigate(this.props.history, this.getEditSpacePath(record))}>
+            {value}
+          </EuiLink>
         ),
       },
       {
@@ -327,6 +338,7 @@ export class SpacesGridPage extends Component<Props, State> {
           {
             render: (record: Space) => (
               <EuiButtonIcon
+                data-test-subj={`${record.name}-editSpace`}
                 aria-label={i18n.translate(
                   'xpack.spaces.management.spacesGridPage.editSpaceActionName',
                   {
@@ -336,7 +348,7 @@ export class SpacesGridPage extends Component<Props, State> {
                 )}
                 color={'primary'}
                 iconType={'pencil'}
-                href={this.getEditSpacePath(record)}
+                {...reactRouterNavigate(this.props.history, this.getEditSpacePath(record))}
               />
             ),
           },
@@ -344,6 +356,7 @@ export class SpacesGridPage extends Component<Props, State> {
             available: (record: Space) => !isReservedSpace(record),
             render: (record: Space) => (
               <EuiButtonIcon
+                data-test-subj={`${record.name}-deleteSpace`}
                 aria-label={i18n.translate(
                   'xpack.spaces.management.spacesGridPage.deleteActionName',
                   {
@@ -362,9 +375,7 @@ export class SpacesGridPage extends Component<Props, State> {
     ];
   }
 
-  private getEditSpacePath = (space: Space) => {
-    return `#/management/kibana/spaces/edit/${encodeURIComponent(space.id)}`;
-  };
+  private getEditSpacePath = (space: Space) => `edit/${encodeURIComponent(space.id)}`;
 
   private onDeleteSpaceClick = (space: Space) => {
     this.setState({

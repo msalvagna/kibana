@@ -26,19 +26,23 @@ import {
   NEWSFEED_FALLBACK_LANGUAGE,
   NEWSFEED_LAST_FETCH_STORAGE_KEY,
   NEWSFEED_HASH_SET_STORAGE_KEY,
-} from '../../constants';
-import { NewsfeedPluginInjectedConfig, ApiItem, NewsfeedItem, FetchResult } from '../../types';
+} from '../../common/constants';
+import { ApiItem, NewsfeedItem, FetchResult, NewsfeedPluginBrowserConfig } from '../types';
 
-type ApiConfig = NewsfeedPluginInjectedConfig['newsfeed']['service'];
+type ApiConfig = NewsfeedPluginBrowserConfig['service'];
 
 export class NewsfeedApiDriver {
+  private readonly kibanaVersion: string;
   private readonly loadedTime = moment().utc(); // the date is compared to time in UTC format coming from the service
 
   constructor(
-    private readonly kibanaVersion: string,
+    kibanaVersion: string,
     private readonly userLanguage: string,
     private readonly fetchInterval: number
-  ) {}
+  ) {
+    // The API only accepts versions in the format `X.Y.Z`, so we need to drop the `-SNAPSHOT` or any other label after it
+    this.kibanaVersion = kibanaVersion.replace(/^(\d+\.\d+\.\d+).*/, '$1');
+  }
 
   shouldFetch(): boolean {
     const lastFetchUtc: string | null = sessionStorage.getItem(NEWSFEED_LAST_FETCH_STORAGE_KEY);
@@ -70,7 +74,7 @@ export class NewsfeedApiDriver {
       old = stored.split(',');
     }
 
-    const newHashes = items.map(i => i.hash);
+    const newHashes = items.map((i) => i.hash);
     const updatedHashes = [...new Set(old.concat(newHashes))];
     localStorage.setItem(NEWSFEED_HASH_SET_STORAGE_KEY, updatedHashes.join(','));
 
@@ -167,18 +171,18 @@ export class NewsfeedApiDriver {
  */
 export function getApi(
   http: HttpSetup,
-  config: NewsfeedPluginInjectedConfig['newsfeed'],
+  config: NewsfeedPluginBrowserConfig,
   kibanaVersion: string
 ): Rx.Observable<void | FetchResult> {
-  const userLanguage = i18n.getLocale() || config.defaultLanguage;
-  const fetchInterval = config.fetchInterval;
+  const userLanguage = i18n.getLocale();
+  const fetchInterval = config.fetchInterval.asMilliseconds();
   const driver = new NewsfeedApiDriver(kibanaVersion, userLanguage, fetchInterval);
 
-  return Rx.timer(0, config.mainInterval).pipe(
+  return Rx.timer(0, config.mainInterval.asMilliseconds()).pipe(
     filter(() => driver.shouldFetch()),
     mergeMap(() =>
       driver.fetchNewsfeedItems(http, config.service).pipe(
-        catchError(err => {
+        catchError((err) => {
           window.console.error(err);
           return Rx.of({
             error: err,

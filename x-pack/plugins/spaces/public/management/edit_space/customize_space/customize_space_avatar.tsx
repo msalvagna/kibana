@@ -58,7 +58,7 @@ export class CustomizeSpaceAvatar extends Component<Props, State> {
     const image = new Image();
     image.addEventListener(
       'load',
-      function() {
+      function () {
         const MAX_IMAGE_SIZE = 64;
         const imgDimx = image.width;
         const imgDimy = image.height;
@@ -91,8 +91,9 @@ export class CustomizeSpaceAvatar extends Component<Props, State> {
     image.src = imgUrl;
   };
 
-  private onFileUpload = (files: File[]) => {
-    const [file] = files;
+  private onFileUpload = (files: FileList | null) => {
+    if (files == null) return;
+    const file = files[0];
     if (imageTypes.indexOf(file.type) > -1) {
       encode(file).then((dataurl: string) => this.handleImageUpload(dataurl));
     }
@@ -118,6 +119,7 @@ export class CustomizeSpaceAvatar extends Component<Props, State> {
         >
           <EuiFieldText
             inputRef={this.initialsInputRef}
+            data-test-subj="spaceLetterInitial"
             name="spaceInitials"
             // allows input to be cleared or otherwise invalidated while user is editing the initials,
             // without defaulting to the derived initials provided by `getSpaceInitials`
@@ -162,6 +164,7 @@ export class CustomizeSpaceAvatar extends Component<Props, State> {
         >
           <EuiFilePicker
             display="default"
+            data-test-subj="uploadCustomImageFile"
             initialPromptText={i18n.translate(
               'xpack.spaces.management.customizeSpaceAvatar.selectImageUrl',
               {
@@ -169,7 +172,7 @@ export class CustomizeSpaceAvatar extends Component<Props, State> {
               }
             )}
             onChange={this.onFileUpload}
-            accept={imageTypes}
+            accept={imageTypes.join(',')}
           />
         </EuiFormRow>
       );

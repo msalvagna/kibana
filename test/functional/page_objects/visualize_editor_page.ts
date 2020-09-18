@@ -103,6 +103,15 @@ export function VisualizeEditorPageProvider({ getService, getPageObjects }: FtrP
       await radioBtn.click();
     }
 
+    public async clickAddDateRange() {
+      await testSubjects.click(`visEditorAddDateRange`);
+    }
+
+    public async setDateRangeByIndex(index: string, from: string, to: string) {
+      await testSubjects.setValue(`visEditorDateRange${index}__from`, from);
+      await testSubjects.setValue(`visEditorDateRange${index}__to`, to);
+    }
+
     /**
      * Adds new bucket
      * @param bucketName bucket name, like 'X-axis', 'Split rows', 'Split series'
@@ -110,7 +119,7 @@ export function VisualizeEditorPageProvider({ getService, getPageObjects }: FtrP
      */
     public async clickBucket(bucketName: string, type = 'buckets') {
       await testSubjects.click(`visEditorAdd_${type}`);
-      await find.clickByCssSelector(`[data-test-subj="visEditorAdd_${type}_${bucketName}"`);
+      await testSubjects.click(`visEditorAdd_${type}_${bucketName}`);
     }
 
     public async clickEnableCustomRanges() {
@@ -219,6 +228,10 @@ export function VisualizeEditorPageProvider({ getService, getPageObjects }: FtrP
 
     public async clickDropPartialBuckets() {
       await testSubjects.click('dropPartialBucketsCheckbox');
+    }
+
+    public async expectMarkdownTextArea() {
+      await testSubjects.existOrFail('markdownTextarea');
     }
 
     public async setMarkdownTxt(markdownTxt: string) {
@@ -432,6 +445,15 @@ export function VisualizeEditorPageProvider({ getService, getPageObjects }: FtrP
       } else if (type === 'custom') {
         await comboBox.setCustom('visEditorInterval', newValue);
       } else {
+        if (type === 'numeric') {
+          const autoMode = await testSubjects.getAttribute(
+            `visEditorIntervalSwitch${aggNth}`,
+            'aria-checked'
+          );
+          if (autoMode === 'true') {
+            await testSubjects.click(`visEditorIntervalSwitch${aggNth}`);
+          }
+        }
         if (append) {
           await testSubjects.append(`visEditorInterval${aggNth}`, String(newValue));
         } else {
@@ -444,8 +466,8 @@ export function VisualizeEditorPageProvider({ getService, getPageObjects }: FtrP
       return await comboBox.getComboBoxSelectedOptions('visEditorInterval');
     }
 
-    public async getNumericInterval(agg = 2) {
-      return await testSubjects.getAttribute(`visEditorInterval${agg}`, 'value');
+    public async getNumericInterval(aggNth = 2) {
+      return await testSubjects.getAttribute(`visEditorInterval${aggNth}`, 'value');
     }
 
     public async clickMetricEditor() {
@@ -466,7 +488,7 @@ export function VisualizeEditorPageProvider({ getService, getPageObjects }: FtrP
       const $ = await selectField.parseDomContent();
       const optionsText = $('option')
         .toArray()
-        .map(option => $(option).text());
+        .map((option) => $(option).text());
       const optionIndex = optionsText.indexOf(optionText);
 
       if (optionIndex === -1) {
@@ -477,6 +499,37 @@ export function VisualizeEditorPageProvider({ getService, getPageObjects }: FtrP
         );
       }
       await options[optionIndex].click();
+    }
+
+    // point series
+
+    async clickAddAxis() {
+      return await testSubjects.click('visualizeAddYAxisButton');
+    }
+
+    async setAxisTitle(title: string, aggNth = 0) {
+      return await testSubjects.setValue(`valueAxisTitle${aggNth}`, title);
+    }
+
+    public async toggleGridCategoryLines() {
+      return await testSubjects.click('showCategoryLines');
+    }
+
+    public async toggleValuesOnChart() {
+      return await testSubjects.click('showValuesOnChart');
+    }
+
+    public async setGridValueAxis(axis: string) {
+      log.debug(`setGridValueAxis(${axis})`);
+      await find.selectValue('select#gridAxis', axis);
+    }
+
+    public async setSeriesAxis(seriesNth: number, axis: string) {
+      await find.selectValue(`select#seriesValueAxis${seriesNth}`, axis);
+    }
+
+    public async setSeriesType(seriesNth: number, type: string) {
+      await find.selectValue(`select#seriesType${seriesNth}`, type);
     }
   }
 

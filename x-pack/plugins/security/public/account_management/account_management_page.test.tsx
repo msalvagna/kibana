@@ -48,7 +48,7 @@ describe('<AccountManagementPage>', () => {
       <AccountManagementPage
         authc={getSecuritySetupMock({ currentUser: user }).authc}
         notifications={coreMock.createStart().notifications}
-        apiClient={userAPIClientMock.create()}
+        userAPIClient={userAPIClientMock.create()}
       />
     );
 
@@ -70,7 +70,7 @@ describe('<AccountManagementPage>', () => {
       <AccountManagementPage
         authc={getSecuritySetupMock({ currentUser: user }).authc}
         notifications={coreMock.createStart().notifications}
-        apiClient={userAPIClientMock.create()}
+        userAPIClient={userAPIClientMock.create()}
       />
     );
 
@@ -88,7 +88,7 @@ describe('<AccountManagementPage>', () => {
       <AccountManagementPage
         authc={getSecuritySetupMock({ currentUser: user }).authc}
         notifications={coreMock.createStart().notifications}
-        apiClient={userAPIClientMock.create()}
+        userAPIClient={userAPIClientMock.create()}
       />
     );
 
@@ -106,7 +106,7 @@ describe('<AccountManagementPage>', () => {
       <AccountManagementPage
         authc={getSecuritySetupMock({ currentUser: user }).authc}
         notifications={coreMock.createStart().notifications}
-        apiClient={userAPIClientMock.create()}
+        userAPIClient={userAPIClientMock.create()}
       />
     );
 
@@ -115,8 +115,8 @@ describe('<AccountManagementPage>', () => {
       wrapper.update();
     });
 
-    expect(wrapper.find('EuiFieldText[data-test-subj="currentPassword"]')).toHaveLength(1);
-    expect(wrapper.find('EuiFieldText[data-test-subj="newPassword"]')).toHaveLength(1);
+    expect(wrapper.find('EuiFieldPassword[data-test-subj="currentPassword"]')).toHaveLength(1);
+    expect(wrapper.find('EuiFieldPassword[data-test-subj="newPassword"]')).toHaveLength(1);
   });
 
   it(`does not display change password form for users in the saml realm`, async () => {
@@ -125,7 +125,7 @@ describe('<AccountManagementPage>', () => {
       <AccountManagementPage
         authc={getSecuritySetupMock({ currentUser: user }).authc}
         notifications={coreMock.createStart().notifications}
-        apiClient={userAPIClientMock.create()}
+        userAPIClient={userAPIClientMock.create()}
       />
     );
 

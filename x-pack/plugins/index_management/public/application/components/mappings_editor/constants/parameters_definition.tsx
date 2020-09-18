@@ -29,7 +29,7 @@ import { INDEX_DEFAULT } from './default_values';
 import { TYPE_DEFINITION } from './data_types_definition';
 
 const { toInt } = fieldFormatters;
-const { emptyField, containsCharsField, numberGreaterThanField } = fieldValidators;
+const { emptyField, containsCharsField, numberGreaterThanField, isJsonField } = fieldValidators;
 
 const commonErrorMessages = {
   smallerThanZero: i18n.translate(
@@ -225,15 +225,15 @@ export const PARAMETERS_DEFINITION: { [key in ParameterName]: ParameterDefinitio
       min: {
         fieldConfig: {
           defaultValue: 0.01,
-          serializer: value => (value === '' ? '' : toInt(value) / 100),
-          deserializer: value => Math.round(value * 100),
+          serializer: (value) => (value === '' ? '' : toInt(value) / 100),
+          deserializer: (value) => Math.round(value * 100),
         } as FieldConfig,
       },
       max: {
         fieldConfig: {
           defaultValue: 1,
-          serializer: value => (value === '' ? '' : toInt(value) / 100),
-          deserializer: value => Math.round(value * 100),
+          serializer: (value) => (value === '' ? '' : toInt(value) / 100),
+          deserializer: (value) => Math.round(value * 100),
         } as FieldConfig,
       },
     },
@@ -404,6 +404,88 @@ export const PARAMETERS_DEFINITION: { [key in ParameterName]: ParameterDefinitio
     },
     schema: t.string,
   },
+  value: {
+    fieldConfig: {
+      defaultValue: '',
+      type: FIELD_TYPES.TEXT,
+      label: i18n.translate('xpack.idxMgmt.mappingsEditor.parameters.valueLabel', {
+        defaultMessage: 'Value',
+      }),
+    },
+    schema: t.string,
+  },
+  meta: {
+    fieldConfig: {
+      defaultValue: '',
+      label: i18n.translate('xpack.idxMgmt.mappingsEditor.parameters.metaLabel', {
+        defaultMessage: 'Metadata',
+      }),
+      helpText: (
+        <FormattedMessage
+          id="xpack.idxMgmt.mappingsEditor.parameters.metaHelpText"
+          defaultMessage="Use JSON format: {code}"
+          values={{
+            code: <EuiCode>{JSON.stringify({ arbitrary_key: 'anything_goes' })}</EuiCode>,
+          }}
+        />
+      ),
+      validations: [
+        {
+          validator: isJsonField(
+            i18n.translate('xpack.idxMgmt.mappingsEditor.parameters.metaFieldEditorJsonError', {
+              defaultMessage: 'Invalid JSON.',
+            }),
+            { allowEmptyString: true }
+          ),
+        },
+        {
+          validator: ({ value }: ValidationFuncArg<any, string>) => {
+            if (typeof value !== 'string' || value.trim() === '') {
+              return;
+            }
+
+            const json = JSON.parse(value);
+            const valuesAreNotString = Object.values(json).some((v) => typeof v !== 'string');
+
+            if (Array.isArray(json)) {
+              return {
+                message: i18n.translate(
+                  'xpack.idxMgmt.mappingsEditor.parameters.metaFieldEditorArraysNotAllowedError',
+                  {
+                    defaultMessage: 'Arrays are not allowed.',
+                  }
+                ),
+              };
+            } else if (valuesAreNotString) {
+              return {
+                message: i18n.translate(
+                  'xpack.idxMgmt.mappingsEditor.parameters.metaFieldEditorOnlyStringValuesAllowedError',
+                  {
+                    defaultMessage: 'Values must be a string.',
+                  }
+                ),
+              };
+            }
+          },
+        },
+      ],
+      deserializer: (value: any) => {
+        if (value === '') {
+          return value;
+        }
+        return JSON.stringify(value, null, 2);
+      },
+      serializer: (value: string) => {
+        const parsed = JSON.parse(value);
+        // If an empty object was passed, strip out this value entirely.
+        if (!Object.keys(parsed).length) {
+          return undefined;
+        }
+        return parsed;
+      },
+    },
+    schema: t.any,
+  },
   max_input_length: {
     fieldConfig: {
       defaultValue: 50,
@@ -504,7 +586,7 @@ export const PARAMETERS_DEFINITION: { [key in ParameterName]: ParameterDefinitio
     fieldConfig: {
       defaultValue: '',
       type: FIELD_TYPES.NUMBER,
-      deserializer: (value: string | number) => +value,
+      deserializer: (value: string | number) => (value === '' ? value : +value),
       formatters: [toInt],
       label: i18n.translate('xpack.idxMgmt.mappingsEditor.parameters.scalingFactorLabel', {
         defaultMessage: 'Scaling factor',
@@ -582,7 +664,7 @@ export const PARAMETERS_DEFINITION: { [key in ParameterName]: ParameterDefinitio
       serializer: (format: ComboBoxOption[]): string | undefined =>
         format.length ? format.map(({ label }) => label).join('||') : undefined,
       deserializer: (formats: string): ComboBoxOption[] | undefined =>
-        formats.split('||').map(format => ({ label: format })),
+        formats.split('||').map((format) => ({ label: format })),
       helpText: (
         <FormattedMessage
           id="xpack.idxMgmt.mappingsEditor.formatHelpText"
@@ -689,6 +771,12 @@ export const PARAMETERS_DEFINITION: { [key in ParameterName]: ParameterDefinitio
   index_phrases: {
     fieldConfig: {
       defaultValue: false,
+    },
+    schema: t.boolean,
+  },
+  positive_score_impact: {
+    fieldConfig: {
+      defaultValue: true,
     },
     schema: t.boolean,
   },
@@ -801,14 +889,14 @@ export const PARAMETERS_DEFINITION: { [key in ParameterName]: ParameterDefinitio
         fieldConfig: {
           type: FIELD_TYPES.NUMBER,
           defaultValue: 2,
-          serializer: value => (value === '' ? '' : toInt(value)),
+          serializer: (value) => (value === '' ? '' : toInt(value)),
         } as FieldConfig,
       },
       max_chars: {
         fieldConfig: {
           type: FIELD_TYPES.NUMBER,
           defaultValue: 5,
-          serializer: value => (value === '' ? '' : toInt(value)),
+          serializer: (value) => (value === '' ? '' : toInt(value)),
         } as FieldConfig,
       },
     },

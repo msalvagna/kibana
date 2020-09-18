@@ -27,9 +27,7 @@ import { clearStateFromSavedQuery } from './clear_saved_query';
 
 interface UseSavedQueriesProps {
   queryService: DataPublicPluginStart['query'];
-  setQuery: Function;
   notifications: CoreStart['notifications'];
-  uiSettings: CoreStart['uiSettings'];
   savedQueryId?: string;
 }
 
@@ -41,7 +39,6 @@ interface UseSavedQueriesReturn {
 
 export const useSavedQuery = (props: UseSavedQueriesProps): UseSavedQueriesReturn => {
   // Handle saved queries
-  const defaultLanguage = props.uiSettings.get('search:queryLanguage');
   const [savedQuery, setSavedQuery] = useState<SavedQuery | undefined>();
 
   // Effect is used to convert a saved query id into an object
@@ -53,12 +50,12 @@ export const useSavedQuery = (props: UseSavedQueriesProps): UseSavedQueriesRetur
         // Make sure we set the saved query to the most recent one
         if (newSavedQuery && newSavedQuery.id === savedQueryId) {
           setSavedQuery(newSavedQuery);
-          populateStateFromSavedQuery(props.queryService, props.setQuery, newSavedQuery);
+          populateStateFromSavedQuery(props.queryService, newSavedQuery);
         }
       } catch (error) {
         // Clear saved query
         setSavedQuery(undefined);
-        clearStateFromSavedQuery(props.queryService, props.setQuery, defaultLanguage);
+        clearStateFromSavedQuery(props.queryService);
         // notify of saving error
         props.notifications.toasts.addWarning({
           title: i18n.translate('data.search.unableToGetSavedQueryToastTitle', {
@@ -71,24 +68,23 @@ export const useSavedQuery = (props: UseSavedQueriesProps): UseSavedQueriesRetur
     };
 
     if (props.savedQueryId) fetchSavedQuery(props.savedQueryId);
+    else setSavedQuery(undefined);
   }, [
-    defaultLanguage,
     props.notifications.toasts,
     props.queryService,
     props.queryService.savedQueries,
     props.savedQueryId,
-    props.setQuery,
   ]);
 
   return {
     savedQuery,
     setSavedQuery: (q: SavedQuery) => {
       setSavedQuery(q);
-      populateStateFromSavedQuery(props.queryService, props.setQuery, q);
+      populateStateFromSavedQuery(props.queryService, q);
     },
     clearSavedQuery: () => {
       setSavedQuery(undefined);
-      clearStateFromSavedQuery(props.queryService, props.setQuery, defaultLanguage);
+      clearStateFromSavedQuery(props.queryService);
     },
   };
 };

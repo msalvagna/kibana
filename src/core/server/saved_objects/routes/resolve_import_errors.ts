@@ -21,7 +21,7 @@ import { extname } from 'path';
 import { Readable } from 'stream';
 import { schema } from '@kbn/config-schema';
 import { IRouter } from '../../http';
-import { resolveImportErrors } from '../import';
+import { resolveSavedObjectsImportErrors } from '../import';
 import { SavedObjectConfig } from '../saved_objects_config';
 import { createSavedObjectsStreamFromNdJson } from './utils';
 
@@ -31,11 +31,7 @@ interface FileStream extends Readable {
   };
 }
 
-export const registerResolveImportErrorsRoute = (
-  router: IRouter,
-  config: SavedObjectConfig,
-  supportedTypes: string[]
-) => {
+export const registerResolveImportErrorsRoute = (router: IRouter, config: SavedObjectConfig) => {
   const { maxImportExportSize, maxImportPayloadBytes } = config;
 
   router.post(
@@ -49,6 +45,9 @@ export const registerResolveImportErrorsRoute = (
         },
       },
       validate: {
+        query: schema.object({
+          createNewCopies: schema.boolean({ defaultValue: false }),
+        }),
         body: schema.object({
           file: schema.stream(),
           retries: schema.arrayOf(
@@ -56,6 +55,7 @@ export const registerResolveImportErrorsRoute = (
               type: schema.string(),
               id: schema.string(),
               overwrite: schema.boolean({ defaultValue: false }),
+              destinationId: schema.maybe(schema.string()),
               replaceReferences: schema.arrayOf(
                 schema.object({
                   type: schema.string(),
@@ -64,6 +64,8 @@ export const registerResolveImportErrorsRoute = (
                 }),
                 { defaultValue: [] }
               ),
+              createNewCopy: schema.maybe(schema.boolean()),
+              ignoreMissingReferences: schema.maybe(schema.boolean()),
             })
           ),
         }),
@@ -75,12 +77,14 @@ export const registerResolveImportErrorsRoute = (
       if (fileExtension !== '.ndjson') {
         return res.badRequest({ body: `Invalid file extension ${fileExtension}` });
       }
-      const result = await resolveImportErrors({
-        supportedTypes,
+
+      const result = await resolveSavedObjectsImportErrors({
+        typeRegistry: context.core.savedObjects.typeRegistry,
         savedObjectsClient: context.core.savedObjects.client,
         readStream: createSavedObjectsStreamFromNdJson(file),
         retries: req.body.retries,
         objectLimit: maxImportExportSize,
+        createNewCopies: req.query.createNewCopies,
       });
 
       return res.ok({ body: result });

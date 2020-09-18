@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { ReactNode, ChangeEvent, FormEvent, MouseEvent, MutableRefObject } from 'react';
+import { ReactNode, ChangeEvent, FormEvent, MouseEvent } from 'react';
 import { Subject, Subscription } from './lib';
 
 // This type will convert all optional property to required ones
@@ -28,7 +28,9 @@ export interface FormHook<T extends FormData = FormData> {
   readonly isSubmitted: boolean;
   readonly isSubmitting: boolean;
   readonly isValid: boolean | undefined;
+  readonly id: string;
   submit: (e?: FormEvent<HTMLFormElement> | MouseEvent) => Promise<{ data: T; isValid: boolean }>;
+  validate: () => Promise<boolean>;
   subscribe: (handler: OnUpdateHandler<T>) => Subscription;
   setFieldValue: (fieldName: string, value: FieldValue) => void;
   setFieldErrors: (fieldName: string, errors: ValidationError[]) => void;
@@ -37,15 +39,16 @@ export interface FormHook<T extends FormData = FormData> {
   getFieldDefaultValue: (fieldName: string) => unknown;
   /* Returns a list of all errors in the form */
   getErrors: () => string[];
-  reset: (options?: { resetValues?: boolean }) => void;
+  reset: (options?: { resetValues?: boolean; defaultValue?: Partial<T> }) => void;
   readonly __options: Required<FormOptions>;
-  readonly __formData$: MutableRefObject<Subject<T>>;
+  __getFormData$: () => Subject<T>;
   __addField: (field: FieldHook) => void;
   __removeField: (fieldNames: string | string[]) => void;
   __validateFields: (
     fieldNames: string[]
   ) => Promise<{ areFieldsValid: boolean; isFormValid: boolean | undefined }>;
   __updateFormDataAt: (field: string, value: unknown) => T;
+  __updateDefaultValueAt: (field: string, value: unknown) => void;
   __readFieldConfigFromSchema: (fieldName: string) => FieldConfig;
 }
 
@@ -59,12 +62,13 @@ type FormSchemaEntry<T extends FormData> =
   | { [key: string]: FieldConfig<T> | Array<FieldConfig<T>> | FormSchemaEntry<T> };
 
 export interface FormConfig<T extends FormData = FormData> {
-  onSubmit?: (data: T, isFormValid: boolean) => void;
+  onSubmit?: FormSubmitHandler<T>;
   schema?: FormSchema<T>;
   defaultValue?: Partial<T>;
   serializer?: SerializerFunc<T>;
   deserializer?: SerializerFunc;
   options?: FormOptions;
+  id?: string;
 }
 
 export interface OnFormUpdateArg<T extends FormData> {
@@ -76,7 +80,7 @@ export interface OnFormUpdateArg<T extends FormData> {
   isValid?: boolean;
 }
 
-export type OnUpdateHandler<T extends FormData> = (arg: OnFormUpdateArg<T>) => void;
+export type OnUpdateHandler<T extends FormData = FormData> = (arg: OnFormUpdateArg<T>) => void;
 
 export interface FormOptions {
   errorDisplayDelay?: number;
@@ -86,34 +90,37 @@ export interface FormOptions {
   stripEmptyFields?: boolean;
 }
 
-export interface FieldHook {
+export interface FieldHook<T = unknown> {
   readonly path: string;
   readonly label?: string;
   readonly labelAppend?: string | ReactNode;
   readonly helpText?: string | ReactNode;
   readonly type: string;
-  readonly value: unknown;
+  readonly value: T;
   readonly errors: ValidationError[];
+  readonly isValid: boolean;
   readonly isPristine: boolean;
   readonly isValidating: boolean;
   readonly isValidated: boolean;
   readonly isChangingValue: boolean;
-  readonly form: FormHook<any>;
   getErrorsMessages: (args?: {
     validationType?: 'field' | string;
     errorCode?: string;
   }) => string | null;
   onChange: (event: ChangeEvent<{ name?: string; value: string; checked?: boolean }>) => void;
-  setValue: (value: FieldValue) => void;
+  setValue: (value: T | ((prevValue: T) => T)) => void;
   setErrors: (errors: ValidationError[]) => void;
   clearErrors: (type?: string | string[]) => void;
   validate: (validateData?: {
     formData?: any;
-    value?: unknown;
+    value?: T;
     validationType?: string;
   }) => FieldValidateResponse | Promise<FieldValidateResponse>;
-  reset: (options?: { resetValue: boolean }) => unknown;
-  __serializeOutput: (rawValue?: unknown) => unknown;
+  reset: (options?: { resetValue?: boolean; defaultValue?: T }) => unknown | undefined;
+  // Flag to indicate if the field value will be included in the form data outputted
+  // when calling form.getFormData();
+  __isIncludedInOutput: boolean;
+  __serializeValue: (rawValue?: unknown) => unknown;
 }
 
 export interface FieldConfig<T extends FormData = any, ValueType = unknown> {
@@ -123,7 +130,7 @@ export interface FieldConfig<T extends FormData = any, ValueType = unknown> {
   readonly helpText?: string | ReactNode;
   readonly type?: HTMLInputElement['type'];
   readonly defaultValue?: ValueType;
-  readonly validations?: Array<ValidationConfig<T>>;
+  readonly validations?: Array<ValidationConfig<T, string, ValueType>>;
   readonly formatters?: FormatterFunc[];
   readonly deserializer?: SerializerFunc;
   readonly serializer?: SerializerFunc;
@@ -135,25 +142,32 @@ export interface FieldsMap {
   [key: string]: FieldHook;
 }
 
-export type FormSubmitHandler<T> = (formData: T, isValid: boolean) => Promise<void>;
+export type FormSubmitHandler<T extends FormData = FormData> = (
+  formData: T,
+  isValid: boolean
+) => Promise<void>;
 
 export interface ValidationError<T = string> {
   message: string;
   code?: T;
   validationType?: string;
+  __isBlocking__?: boolean;
   [key: string]: any;
 }
 
 export interface ValidationFuncArg<T extends FormData, V = unknown> {
   path: string;
   value: V;
-  form: FormHook<T>;
+  form: {
+    getFormData: FormHook<T>['getFormData'];
+    getFields: FormHook<T>['getFields'];
+  };
   formData: T;
   errors: readonly ValidationError[];
 }
 
-export type ValidationFunc<T extends FormData = any, E = string> = (
-  data: ValidationFuncArg<T>
+export type ValidationFunc<T extends FormData = any, E = string, V = unknown> = (
+  data: ValidationFuncArg<T, V>
 ) => ValidationError<E> | void | undefined | Promise<ValidationError<E> | void | undefined>;
 
 export interface FieldValidateResponse {
@@ -161,7 +175,7 @@ export interface FieldValidateResponse {
   errors: ValidationError[];
 }
 
-export type SerializerFunc<T = unknown> = (value: any) => T;
+export type SerializerFunc<O = unknown, I = any> = (value: I) => O;
 
 export interface FormData {
   [key: string]: any;
@@ -173,8 +187,14 @@ type FormatterFunc = (value: any, formData: FormData) => unknown;
 // string | number | boolean | string[] ...
 type FieldValue = unknown;
 
-export interface ValidationConfig<T extends FormData = any> {
-  validator: ValidationFunc<T>;
+export interface ValidationConfig<T extends FormData = any, E = string, V = unknown> {
+  validator: ValidationFunc<T, E, V>;
   type?: string;
+  /**
+   * By default all validation are blockers, which means that if they fail, the field is invalid.
+   * In some cases, like when trying to add an item to the ComboBox, if the item is not valid we want
+   * to show a validation error. But this validation is **not** blocking. Simply, the item has not been added.
+   */
+  isBlocking?: boolean;
   exitOnFail?: boolean;
 }

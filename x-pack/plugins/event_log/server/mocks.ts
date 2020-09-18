@@ -5,8 +5,11 @@
  */
 
 import { eventLogServiceMock } from './event_log_service.mock';
+import { eventLogStartServiceMock } from './event_log_start_service.mock';
 
-export { eventLogServiceMock };
+export { eventLogClientMock } from './event_log_client.mock';
+
+export { eventLogServiceMock, eventLogStartServiceMock };
 export { eventLoggerMock } from './event_logger.mock';
 
 const createSetupMock = () => {
@@ -14,7 +17,7 @@ const createSetupMock = () => {
 };
 
 const createStartMock = () => {
-  return undefined;
+  return eventLogStartServiceMock.create();
 };
 
 export const eventLogMock = {

@@ -14,6 +14,7 @@ exports[`renders without crashing 1`] = `
     labelType="label"
   >
     <EuiFieldText
+      data-test-subj="spaceLetterInitial"
       disabled={false}
       inputRef={[Function]}
       name="spaceInitials"
@@ -53,15 +54,9 @@ exports[`renders without crashing 1`] = `
     labelType="label"
   >
     <EuiFilePicker
-      accept={
-        Array [
-          "image/svg+xml",
-          "image/jpeg",
-          "image/png",
-          "image/gif",
-        ]
-      }
+      accept="image/svg+xml,image/jpeg,image/png,image/gif"
       compressed={false}
+      data-test-subj="uploadCustomImageFile"
       display="default"
       initialPromptText="Select image file"
       onChange={[Function]}

@@ -5,14 +5,18 @@
  */
 
 export const PLUGIN_ID = 'lens';
+export const LENS_EMBEDDABLE_TYPE = 'lens';
 export const NOT_INTERNATIONALIZED_PRODUCT_NAME = 'Lens Visualizations';
-export const BASE_APP_URL = '/app/kibana';
 export const BASE_API_URL = '/api/lens';
 
 export function getBasePath() {
-  return `${BASE_APP_URL}#/lens`;
+  return `#/`;
 }
 
 export function getEditPath(id: string) {
-  return `${BASE_APP_URL}#/lens/edit/${encodeURIComponent(id)}`;
+  return `#/edit/${encodeURIComponent(id)}`;
+}
+
+export function getFullPath(id: string) {
+  return `/app/${PLUGIN_ID}${getEditPath(id)}`;
 }

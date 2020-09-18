@@ -19,12 +19,12 @@
 
 import { join } from 'path';
 import { run, createFlagError } from '@kbn/dev-utils';
-import { REPO_ROOT } from '@kbn/dev-utils';
+import { REPO_ROOT } from '@kbn/utils';
 import { storybookAliases } from './aliases';
 import { clean } from './commands/clean';
 
 run(
-  async params => {
+  async (params) => {
     const { flags, log } = params;
     const {
       _: [alias],
@@ -62,7 +62,7 @@ run(
 
       Available aliases:
         ${Object.keys(storybookAliases)
-          .map(alias => `📕 ${alias}`)
+          .map((alias) => `📕 ${alias}`)
           .join('\n        ')}
 
       Add your alias in src/dev/storybook/aliases.ts

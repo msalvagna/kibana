@@ -1,0 +1,13 @@
+{
+  "data": {
+    "source": {
+      "id": "default",
+      "status": {
+        "indicesExist": true,
+        "indexFields": [],
+        "__typename": "SourceStatus"
+      },
+      "__typename": "Source"
+    }
+  }
+}

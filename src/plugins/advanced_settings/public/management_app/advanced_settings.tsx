@@ -19,14 +19,7 @@
 
 import React, { Component } from 'react';
 import { Subscription } from 'rxjs';
-import {
-  Comparators,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiSpacer,
-  // @ts-ignore
-  Query,
-} from '@elastic/eui';
+import { Comparators, EuiFlexGroup, EuiFlexItem, EuiSpacer, Query } from '@elastic/eui';
 
 import { useParams } from 'react-router-dom';
 import { CallOuts } from './components/call_outs';
@@ -38,7 +31,7 @@ import { ComponentRegistry } from '../';
 
 import { getAriaName, toEditableConfig, DEFAULT_CATEGORY } from './lib';
 
-import { FieldSetting, IQuery, SettingsChanges } from './types';
+import { FieldSetting, SettingsChanges } from './types';
 
 interface AdvancedSettingsProps {
   enableSaving: boolean;
@@ -54,7 +47,7 @@ interface AdvancedSettingsComponentProps extends AdvancedSettingsProps {
 
 interface AdvancedSettingsState {
   footerQueryMatched: boolean;
-  query: IQuery;
+  query: Query;
   filteredSettings: Record<string, FieldSetting[]>;
 }
 
@@ -121,6 +114,21 @@ export class AdvancedSettingsComponent extends Component<
         filteredSettings: this.mapSettings(Query.execute(query, this.settings)),
       });
     });
+
+    // scrolls to setting provided in the URL hash
+    const { hash } = window.location;
+    if (hash !== '') {
+      setTimeout(() => {
+        const id = hash.replace('#', '');
+        const element = document.getElementById(id);
+        const globalNavOffset = document.getElementById('globalHeaderBars')?.offsetHeight || 0;
+
+        if (element) {
+          element.scrollIntoView();
+          window.scrollBy(0, -globalNavOffset); // offsets scroll by height of the global nav
+        }
+      }, 0);
+    }
   }
 
   componentWillUnmount() {
@@ -132,7 +140,7 @@ export class AdvancedSettingsComponent extends Component<
   mapConfig(config: IUiSettingsClient) {
     const all = config.getAll();
     return Object.entries(all)
-      .map(setting => {
+      .map((setting) => {
         return toEditableConfig({
           def: setting[1],
           name: setting[0],
@@ -141,7 +149,7 @@ export class AdvancedSettingsComponent extends Component<
           isOverridden: config.isOverridden(setting[0]),
         });
       })
-      .filter(c => !c.readonly)
+      .filter((c) => !c.readonly)
       .sort(Comparators.property('name', Comparators.default('asc')));
   }
 
@@ -156,7 +164,7 @@ export class AdvancedSettingsComponent extends Component<
     }, {});
   }
 
-  onQueryChange = ({ query }: { query: IQuery }) => {
+  onQueryChange = ({ query }: { query: Query }) => {
     this.setState({
       query,
       filteredSettings: this.mapSettings(Query.execute(query, this.settings)),
@@ -235,7 +243,7 @@ export class AdvancedSettingsComponent extends Component<
 }
 
 export const AdvancedSettings = (props: AdvancedSettingsProps) => {
-  const { query } = useParams();
+  const { query } = useParams<{ query: string }>();
   return (
     <AdvancedSettingsComponent
       queryText={query || ''}

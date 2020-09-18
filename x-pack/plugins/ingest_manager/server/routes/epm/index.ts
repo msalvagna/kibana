@@ -3,73 +3,107 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import { IRouter } from 'kibana/server';
+import { IRouter } from 'src/core/server';
 import { PLUGIN_ID, EPM_API_ROUTES } from '../../constants';
+import {
+  getCategoriesHandler,
+  getListHandler,
+  getLimitedListHandler,
+  getFileHandler,
+  getInfoHandler,
+  installPackageFromRegistryHandler,
+  installPackageByUploadHandler,
+  deletePackageHandler,
+} from './handlers';
+import {
+  GetCategoriesRequestSchema,
+  GetPackagesRequestSchema,
+  GetFileRequestSchema,
+  GetInfoRequestSchema,
+  InstallPackageFromRegistryRequestSchema,
+  InstallPackageByUploadRequestSchema,
+  DeletePackageRequestSchema,
+} from '../../types';
+
+const MAX_FILE_SIZE_BYTES = 104857600; // 100MB
 
 export const registerRoutes = (router: IRouter) => {
   router.get(
     {
       path: EPM_API_ROUTES.CATEGORIES_PATTERN,
-      validate: false,
-      options: { tags: [`access:${PLUGIN_ID}`] },
+      validate: GetCategoriesRequestSchema,
+      options: { tags: [`access:${PLUGIN_ID}-read`] },
     },
-    async (context, req, res) => {
-      return res.ok({ body: { hello: 'world' } });
-    }
+    getCategoriesHandler
   );
 
   router.get(
     {
       path: EPM_API_ROUTES.LIST_PATTERN,
-      validate: false,
-      options: { tags: [`access:${PLUGIN_ID}`] },
+      validate: GetPackagesRequestSchema,
+      options: { tags: [`access:${PLUGIN_ID}-read`] },
     },
-    async (context, req, res) => {
-      return res.ok({ body: { hello: 'world' } });
-    }
+    getListHandler
   );
 
   router.get(
     {
-      path: `${EPM_API_ROUTES.INFO_PATTERN}/{filePath*}`,
+      path: EPM_API_ROUTES.LIMITED_LIST_PATTERN,
       validate: false,
       options: { tags: [`access:${PLUGIN_ID}`] },
     },
-    async (context, req, res) => {
-      return res.ok({ body: { hello: 'world' } });
-    }
+    getLimitedListHandler
+  );
+
+  router.get(
+    {
+      path: EPM_API_ROUTES.FILEPATH_PATTERN,
+      validate: GetFileRequestSchema,
+      options: { tags: [`access:${PLUGIN_ID}-read`] },
+    },
+    getFileHandler
   );
 
   router.get(
     {
       path: EPM_API_ROUTES.INFO_PATTERN,
-      validate: false,
-      options: { tags: [`access:${PLUGIN_ID}`] },
+      validate: GetInfoRequestSchema,
+      options: { tags: [`access:${PLUGIN_ID}-read`] },
     },
-    async (context, req, res) => {
-      return res.ok({ body: { hello: 'world' } });
-    }
+    getInfoHandler
   );
 
-  router.get(
+  router.post(
     {
-      path: EPM_API_ROUTES.INSTALL_PATTERN,
-      validate: false,
-      options: { tags: [`access:${PLUGIN_ID}`] },
+      path: EPM_API_ROUTES.INSTALL_FROM_REGISTRY_PATTERN,
+      validate: InstallPackageFromRegistryRequestSchema,
+      options: { tags: [`access:${PLUGIN_ID}-all`] },
     },
-    async (context, req, res) => {
-      return res.ok({ body: { hello: 'world' } });
-    }
+    installPackageFromRegistryHandler
   );
 
-  router.get(
+  router.post(
+    {
+      path: EPM_API_ROUTES.INSTALL_BY_UPLOAD_PATTERN,
+      validate: InstallPackageByUploadRequestSchema,
+      options: {
+        tags: [`access:${PLUGIN_ID}-all`],
+        body: {
+          accepts: ['application/gzip', 'application/zip'],
+          parse: false,
+          maxBytes: MAX_FILE_SIZE_BYTES,
+        },
+      },
+    },
+    installPackageByUploadHandler
+  );
+
+  router.delete(
     {
       path: EPM_API_ROUTES.DELETE_PATTERN,
-      validate: false,
-      options: { tags: [`access:${PLUGIN_ID}`] },
+      validate: DeletePackageRequestSchema,
+      options: { tags: [`access:${PLUGIN_ID}-all`] },
     },
-    async (context, req, res) => {
-      return res.ok({ body: { hello: 'world' } });
-    }
+    deletePackageHandler
   );
 };

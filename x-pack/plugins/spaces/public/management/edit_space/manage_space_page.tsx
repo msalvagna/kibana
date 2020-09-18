@@ -18,8 +18,8 @@ import { FormattedMessage } from '@kbn/i18n/react';
 import { i18n } from '@kbn/i18n';
 import _ from 'lodash';
 import React, { Component, Fragment } from 'react';
-import { Capabilities, HttpStart, NotificationsStart } from 'src/core/public';
-import { Feature } from '../../../../features/public';
+import { ApplicationStart, Capabilities, NotificationsStart, ScopedHistory } from 'src/core/public';
+import { KibanaFeature, FeaturesPluginStart } from '../../../../features/public';
 import { isReservedSpace } from '../../../common';
 import { Space } from '../../../common/model/space';
 import { SpacesManager } from '../../spaces_manager';
@@ -33,18 +33,20 @@ import { EnabledFeatures } from './enabled_features';
 import { ReservedSpaceBadge } from './reserved_space_badge';
 
 interface Props {
-  http: HttpStart;
+  getFeatures: FeaturesPluginStart['getFeatures'];
   notifications: NotificationsStart;
   spacesManager: SpacesManager;
   spaceId?: string;
   onLoadSpace?: (space: Space) => void;
   capabilities: Capabilities;
   securityEnabled: boolean;
+  history: ScopedHistory;
+  getUrlForApp: ApplicationStart['getUrlForApp'];
 }
 
 interface State {
   space: Partial<Space>;
-  features: Feature[];
+  features: KibanaFeature[];
   originalSpace?: Partial<Space>;
   showAlteringActiveSpaceDialog: boolean;
   isLoading: boolean;
@@ -75,15 +77,21 @@ export class ManageSpacePage extends Component<Props, State> {
       return;
     }
 
-    const { spaceId, http } = this.props;
+    const { spaceId, getFeatures, notifications } = this.props;
 
-    const getFeatures = http.get('/api/features');
-
-    if (spaceId) {
-      await this.loadSpace(spaceId, getFeatures);
-    } else {
-      const features = await getFeatures;
-      this.setState({ isLoading: false, features });
+    try {
+      if (spaceId) {
+        await this.loadSpace(spaceId, getFeatures());
+      } else {
+        const features = await getFeatures();
+        this.setState({ isLoading: false, features });
+      }
+    } catch (e) {
+      notifications.toasts.addError(e, {
+        title: i18n.translate('xpack.spaces.management.manageSpacePage.loadErrorTitle', {
+          defaultMessage: 'Error loading available features',
+        }),
+      });
     }
   }
 
@@ -148,6 +156,7 @@ export class ManageSpacePage extends Component<Props, State> {
           space={this.state.space}
           features={this.state.features}
           onChange={this.onSpaceChange}
+          getUrlForApp={this.props.getUrlForApp}
           securityEnabled={this.props.securityEnabled}
         />
 
@@ -168,11 +177,16 @@ export class ManageSpacePage extends Component<Props, State> {
   };
 
   public getFormHeading = () => (
-    <EuiTitle size="m">
-      <h1>
-        {this.getTitle()} <ReservedSpaceBadge space={this.state.space as Space} />
-      </h1>
-    </EuiTitle>
+    <EuiFlexGroup alignItems="center" gutterSize="s">
+      <EuiFlexItem grow={false}>
+        <EuiTitle size="m">
+          <h1 className="eui-displayInlineBlock">{this.getTitle()}</h1>
+        </EuiTitle>
+      </EuiFlexItem>
+      <EuiFlexItem grow={false}>
+        <ReservedSpaceBadge space={this.state.space as Space} />
+      </EuiFlexItem>
+    </EuiFlexGroup>
   );
 
   public getTitle = () => {
@@ -189,7 +203,7 @@ export class ManageSpacePage extends Component<Props, State> {
 
   public maybeGetSecureSpacesMessage = () => {
     if (this.editingExistingSpace() && this.props.securityEnabled) {
-      return <SecureSpaceMessage />;
+      return <SecureSpaceMessage getUrlForApp={this.props.getUrlForApp} />;
     }
     return null;
   };
@@ -282,7 +296,7 @@ export class ManageSpacePage extends Component<Props, State> {
       const originalSpace: Space = this.state.originalSpace as Space;
       const space: Space = this.state.space as Space;
 
-      spacesManager.getActiveSpace().then(activeSpace => {
+      spacesManager.getActiveSpace().then((activeSpace) => {
         const editingActiveSpace = activeSpace.id === originalSpace.id;
 
         const haveDisabledFeaturesChanged =
@@ -303,7 +317,7 @@ export class ManageSpacePage extends Component<Props, State> {
     }
   };
 
-  private loadSpace = async (spaceId: string, featuresPromise: Promise<Feature[]>) => {
+  private loadSpace = async (spaceId: string, featuresPromise: Promise<KibanaFeature[]>) => {
     const { spacesManager, onLoadSpace } = this.props;
 
     try {
@@ -318,7 +332,7 @@ export class ManageSpacePage extends Component<Props, State> {
 
         this.setState({
           space,
-          features: await features,
+          features,
           originalSpace: space,
           isLoading: false,
         });
@@ -381,14 +395,16 @@ export class ManageSpacePage extends Component<Props, State> {
             }
           )
         );
-        window.location.hash = `#/management/kibana/spaces`;
+
+        this.backToSpacesList();
+
         if (requireRefresh) {
           setTimeout(() => {
             window.location.reload();
           });
         }
       })
-      .catch(error => {
+      .catch((error) => {
         const message = error?.body?.message ?? '';
 
         this.setState({ saveInProgress: false });
@@ -402,9 +418,7 @@ export class ManageSpacePage extends Component<Props, State> {
       });
   };
 
-  private backToSpacesList = () => {
-    window.location.hash = `#/management/kibana/spaces`;
-  };
+  private backToSpacesList = () => this.props.history.push('/');
 
   private editingExistingSpace = () => !!this.props.spaceId;
 }

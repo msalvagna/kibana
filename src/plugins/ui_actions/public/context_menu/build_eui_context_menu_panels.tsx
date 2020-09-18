@@ -20,33 +20,47 @@
 import * as React from 'react';
 import { EuiContextMenuPanelDescriptor, EuiContextMenuPanelItemDescriptor } from '@elastic/eui';
 import _ from 'lodash';
+import sortBy from 'lodash/sortBy';
 import { i18n } from '@kbn/i18n';
 import { uiToReactComponent } from '../../../kibana_react/public';
 import { Action } from '../actions';
+import { Trigger } from '../triggers';
+import { BaseContext } from '../types';
+
+export const defaultTitle = i18n.translate('uiActions.actionPanel.title', {
+  defaultMessage: 'Options',
+});
+
+interface ActionWithContext<Context extends BaseContext = BaseContext> {
+  action: Action<Context>;
+  context: Context;
+
+  /**
+   * Trigger that caused this action
+   */
+  trigger: Trigger;
+}
 
 /**
  * Transforms an array of Actions to the shape EuiContextMenuPanel expects.
  */
-export async function buildContextMenuForActions<A>({
+export async function buildContextMenuForActions({
   actions,
-  actionContext,
-  closeMenu,
+  title = defaultTitle,
+  closeMenu = () => {},
 }: {
-  actions: Array<Action<A>>;
-  actionContext: A;
-  closeMenu: () => void;
+  actions: ActionWithContext[];
+  title?: string;
+  closeMenu?: () => void;
 }): Promise<EuiContextMenuPanelDescriptor> {
-  const menuItems = await buildEuiContextMenuPanelItems<A>({
+  const menuItems = await buildEuiContextMenuPanelItems({
     actions,
-    actionContext,
     closeMenu,
   });
 
   return {
     id: 'mainMenu',
-    title: i18n.translate('uiActions.actionPanel.title', {
-      defaultMessage: 'Options',
-    }),
+    title,
     items: menuItems,
   };
 }
@@ -54,69 +68,110 @@ export async function buildContextMenuForActions<A>({
 /**
  * Transform an array of Actions into the shape needed to build an EUIContextMenu
  */
-async function buildEuiContextMenuPanelItems<A>({
+async function buildEuiContextMenuPanelItems({
   actions,
-  actionContext,
   closeMenu,
 }: {
-  actions: Array<Action<A>>;
-  actionContext: A;
+  actions: ActionWithContext[];
   closeMenu: () => void;
 }) {
-  const items: EuiContextMenuPanelItemDescriptor[] = [];
-  const promises = actions.map(async action => {
-    const isCompatible = await action.isCompatible(actionContext);
+  actions = sortBy(
+    actions,
+    (a) => -1 * (a.action.order ?? 0),
+    (a) => a.action.type,
+    (a) => a.action.getDisplayName({ ...a.context, trigger: a.trigger })
+  );
+
+  const items: EuiContextMenuPanelItemDescriptor[] = new Array(actions.length);
+  const promises = actions.map(async ({ action, context, trigger }, index) => {
+    const isCompatible = await action.isCompatible({
+      ...context,
+      trigger,
+    });
     if (!isCompatible) {
       return;
     }
 
-    items.push(
-      convertPanelActionToContextMenuItem({
-        action,
-        actionContext,
-        closeMenu,
-      })
-    );
+    items[index] = await convertPanelActionToContextMenuItem({
+      action,
+      actionContext: context,
+      trigger,
+      closeMenu,
+    });
   });
 
   await Promise.all(promises);
 
-  return items;
+  return items.filter(Boolean);
 }
 
-/**
- *
- * @param {ContextMenuAction} action
- * @param {Embeddable} embeddable
- * @return {EuiContextMenuPanelItemDescriptor}
- */
-function convertPanelActionToContextMenuItem<A>({
+async function convertPanelActionToContextMenuItem<Context extends object>({
   action,
   actionContext,
+  trigger,
   closeMenu,
 }: {
-  action: Action<A>;
-  actionContext: A;
+  action: Action<Context>;
+  actionContext: Context;
+  trigger: Trigger;
   closeMenu: () => void;
-}): EuiContextMenuPanelItemDescriptor {
+}): Promise<EuiContextMenuPanelItemDescriptor> {
   const menuPanelItem: EuiContextMenuPanelItemDescriptor = {
     name: action.MenuItem
       ? React.createElement(uiToReactComponent(action.MenuItem), {
-          context: actionContext,
+          context: {
+            ...actionContext,
+            trigger,
+          },
         })
-      : action.getDisplayName(actionContext),
-    icon: action.getIconType(actionContext),
+      : action.getDisplayName({
+          ...actionContext,
+          trigger,
+        }),
+    icon: action.getIconType({
+      ...actionContext,
+      trigger,
+    }),
     panel: _.get(action, 'childContextMenuPanel.id'),
     'data-test-subj': `embeddablePanelAction-${action.id}`,
   };
 
-  menuPanelItem.onClick = () => {
-    action.execute(actionContext);
+  menuPanelItem.onClick = (event) => {
+    if (event.currentTarget instanceof HTMLAnchorElement) {
+      // from react-router's <Link/>
+      if (
+        !event.defaultPrevented && // onClick prevented default
+        event.button === 0 && // ignore everything but left clicks
+        (!event.currentTarget.target || event.currentTarget.target === '_self') && // let browser handle "target=_blank" etc.
+        !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) // ignore clicks with modifier keys
+      ) {
+        event.preventDefault();
+        action.execute({
+          ...actionContext,
+          trigger,
+        });
+      } else {
+        // let browser handle navigation
+      }
+    } else {
+      // not a link
+      action.execute({
+        ...actionContext,
+        trigger,
+      });
+    }
+
     closeMenu();
   };
 
-  if (action.getHref && action.getHref(actionContext)) {
-    menuPanelItem.href = action.getHref(actionContext);
+  if (action.getHref) {
+    const href = await action.getHref({
+      ...actionContext,
+      trigger,
+    });
+    if (href) {
+      menuPanelItem.href = href;
+    }
   }
 
   return menuPanelItem;

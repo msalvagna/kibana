@@ -15,6 +15,7 @@ import { Service } from './fields/service';
 import { Url } from './fields/url';
 import { User } from './fields/user';
 import { UserAgent } from './fields/user_agent';
+import { Observer } from './fields/observer';
 
 interface Processor {
   name: 'transaction';
@@ -53,6 +54,7 @@ export interface TransactionRaw extends APMBaseDoc {
 
   // Shared by errors and transactions
   container?: Container;
+  ecs?: { version?: string };
   host?: Host;
   http?: Http;
   kubernetes?: Kubernetes;
@@ -61,4 +63,5 @@ export interface TransactionRaw extends APMBaseDoc {
   url?: Url;
   user?: User;
   user_agent?: UserAgent;
+  observer?: Observer;
 }

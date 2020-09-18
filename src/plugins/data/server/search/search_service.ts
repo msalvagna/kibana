@@ -17,86 +17,153 @@
  * under the License.
  */
 
+import { Observable } from 'rxjs';
 import {
-  PluginInitializerContext,
-  Plugin,
   CoreSetup,
-  IContextContainer,
-} from '../../../../core/server';
-import { registerSearchRoute } from './routes';
-import { ISearchSetup } from './i_search_setup';
-import { createApi } from './create_api';
-import {
-  TSearchStrategiesMap,
-  TSearchStrategyProvider,
-  TRegisterSearchStrategyProvider,
-} from './i_search_strategy';
-import { IRouteHandlerSearchContext } from './i_route_handler_search_context';
-import { esSearchService } from './es_search';
+  CoreStart,
+  Logger,
+  Plugin,
+  PluginInitializerContext,
+  RequestHandlerContext,
+  SharedGlobalConfig,
+  StartServicesAccessor,
+} from 'src/core/server';
+import { ISearchSetup, ISearchStart, ISearchStrategy, SearchEnhancements } from './types';
 
-declare module 'kibana/server' {
-  interface RequestHandlerContext {
-    search?: IRouteHandlerSearchContext;
-  }
+import { AggsService, AggsSetupDependencies } from './aggs';
+
+import { FieldFormatsStart } from '../field_formats';
+import { registerMsearchRoute, registerSearchRoute } from './routes';
+import { ES_SEARCH_STRATEGY, esSearchStrategyProvider } from './es_search';
+import { DataPluginStart } from '../plugin';
+import { UsageCollectionSetup } from '../../../usage_collection/server';
+import { registerUsageCollector } from './collectors/register';
+import { usageProvider } from './collectors/usage';
+import { searchTelemetry } from '../saved_objects';
+import { IEsSearchRequest, IEsSearchResponse, ISearchOptions } from '../../common';
+
+type StrategyMap<
+  SearchStrategyRequest extends IEsSearchRequest = IEsSearchRequest,
+  SearchStrategyResponse extends IEsSearchResponse = IEsSearchResponse
+> = Record<string, ISearchStrategy<SearchStrategyRequest, SearchStrategyResponse>>;
+
+/** @internal */
+export interface SearchServiceSetupDependencies {
+  registerFunction: AggsSetupDependencies['registerFunction'];
+  usageCollection?: UsageCollectionSetup;
 }
 
-export class SearchService implements Plugin<ISearchSetup, void> {
-  private searchStrategies: TSearchStrategiesMap = {};
+/** @internal */
+export interface SearchServiceStartDependencies {
+  fieldFormats: FieldFormatsStart;
+}
 
-  private contextContainer?: IContextContainer<TSearchStrategyProvider<any>>;
+/** @internal */
+export interface SearchRouteDependencies {
+  getStartServices: StartServicesAccessor<{}, DataPluginStart>;
+  globalConfig$: Observable<SharedGlobalConfig>;
+}
 
-  constructor(private initializerContext: PluginInitializerContext) {}
+export class SearchService implements Plugin<ISearchSetup, ISearchStart> {
+  private readonly aggsService = new AggsService();
+  private defaultSearchStrategyName: string = ES_SEARCH_STRATEGY;
+  private searchStrategies: StrategyMap<any, any> = {};
 
-  public setup(core: CoreSetup): ISearchSetup {
+  constructor(
+    private initializerContext: PluginInitializerContext,
+    private readonly logger: Logger
+  ) {}
+
+  public setup(
+    core: CoreSetup<{}, DataPluginStart>,
+    { registerFunction, usageCollection }: SearchServiceSetupDependencies
+  ): ISearchSetup {
+    const usage = usageCollection ? usageProvider(core) : undefined;
+
     const router = core.http.createRouter();
-    registerSearchRoute(router);
-
-    this.contextContainer = core.context.createContextContainer();
-
-    core.http.registerRouteHandlerContext<'search'>('search', context => {
-      return createApi({
-        caller: context.core!.elasticsearch.dataClient.callAsCurrentUser,
-        searchStrategies: this.searchStrategies,
-      });
-    });
-
-    const registerSearchStrategyProvider: TRegisterSearchStrategyProvider = (
-      plugin,
-      name,
-      strategyProvider
-    ) => {
-      this.searchStrategies[name] = this.contextContainer!.createHandler(plugin, strategyProvider);
+    const routeDependencies = {
+      getStartServices: core.getStartServices,
+      globalConfig$: this.initializerContext.config.legacy.globalConfig$,
     };
+    registerSearchRoute(router, routeDependencies);
+    registerMsearchRoute(router, routeDependencies);
 
-    const api: ISearchSetup = {
-      registerSearchStrategyContext: this.contextContainer!.registerContext,
-      registerSearchStrategyProvider,
-      __LEGACY: {
-        search: (caller, request, strategyName) => {
-          const searchAPI = createApi({
-            caller,
-            searchStrategies: this.searchStrategies,
-          });
-          return searchAPI.search(request, {}, strategyName);
-        },
-      },
-    };
-
-    api.registerSearchStrategyContext(this.initializerContext.opaqueId, 'core', () => core);
-    api.registerSearchStrategyContext(
-      this.initializerContext.opaqueId,
-      'config$',
-      () => this.initializerContext.config.legacy.globalConfig$
+    this.registerSearchStrategy(
+      ES_SEARCH_STRATEGY,
+      esSearchStrategyProvider(
+        this.initializerContext.config.legacy.globalConfig$,
+        this.logger,
+        usage
+      )
     );
 
-    // ES search capabilities are written in a way that it could easily be a separate plugin,
-    // however these two plugins are tightly coupled due to the default search strategy using
-    // es search types.
-    esSearchService(this.initializerContext).setup(core, { search: api });
+    core.savedObjects.registerType(searchTelemetry);
+    if (usageCollection) {
+      registerUsageCollector(usageCollection, this.initializerContext);
+    }
 
-    return api;
+    return {
+      __enhance: (enhancements: SearchEnhancements) => {
+        if (this.searchStrategies.hasOwnProperty(enhancements.defaultStrategy)) {
+          this.defaultSearchStrategyName = enhancements.defaultStrategy;
+        }
+      },
+      aggs: this.aggsService.setup({ registerFunction }),
+      registerSearchStrategy: this.registerSearchStrategy,
+      usage,
+    };
   }
 
-  public start() {}
-  public stop() {}
+  private search(
+    context: RequestHandlerContext,
+    searchRequest: IEsSearchRequest,
+    options: ISearchOptions
+  ) {
+    return this.getSearchStrategy(options.strategy || this.defaultSearchStrategyName).search(
+      context,
+      searchRequest,
+      options
+    );
+  }
+
+  public start(
+    { uiSettings }: CoreStart,
+    { fieldFormats }: SearchServiceStartDependencies
+  ): ISearchStart {
+    return {
+      aggs: this.aggsService.start({ fieldFormats, uiSettings }),
+      getSearchStrategy: this.getSearchStrategy,
+      search: (
+        context: RequestHandlerContext,
+        searchRequest: IEsSearchRequest,
+        options: Record<string, any>
+      ) => {
+        return this.search(context, searchRequest, options);
+      },
+    };
+  }
+
+  public stop() {
+    this.aggsService.stop();
+  }
+
+  private registerSearchStrategy = <
+    SearchStrategyRequest extends IEsSearchRequest = IEsSearchRequest,
+    SearchStrategyResponse extends IEsSearchResponse = IEsSearchResponse
+  >(
+    name: string,
+    strategy: ISearchStrategy<SearchStrategyRequest, SearchStrategyResponse>
+  ) => {
+    this.logger.debug(`Register strategy ${name}`);
+    this.searchStrategies[name] = strategy;
+  };
+
+  private getSearchStrategy = (name: string): ISearchStrategy => {
+    this.logger.debug(`Get strategy ${name}`);
+    const strategy = this.searchStrategies[name];
+    if (!strategy) {
+      throw new Error(`Search strategy ${name} not found`);
+    }
+    return strategy;
+  };
 }

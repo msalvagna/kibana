@@ -24,9 +24,9 @@ export const plugin = (initializerContext: PluginInitializerContext) =>
   new KibanaLegacyPlugin(initializerContext);
 
 export * from './plugin';
-export { kbnBaseUrl } from '../common/kbn_base_url';
 
 export { initAngularBootstrap } from './angular_bootstrap';
+export { PaginateDirectiveProvider, PaginateControlsDirectiveProvider } from './paginate/paginate';
 export * from './angular';
 export * from './notify';
 export * from './utils';

@@ -17,8 +17,6 @@
  * under the License.
  */
 
-/* eslint-disable @typescript-eslint/camelcase */
-
 import uuid from 'uuid';
 import { decodeVersion, encodeVersion } from '../version';
 import { ISavedObjectTypeRegistry } from '../saved_objects_type_registry';
@@ -49,7 +47,7 @@ export class SavedObjectsSerializer {
   public isRawSavedObject(rawDoc: SavedObjectsRawDoc) {
     const { type, namespace } = rawDoc._source;
     const namespacePrefix =
-      namespace && !this.registry.isNamespaceAgnostic(type) ? `${namespace}:` : '';
+      namespace && this.registry.isSingleNamespace(type) ? `${namespace}:` : '';
     return Boolean(
       type &&
         rawDoc._id.startsWith(`${namespacePrefix}${type}:`) &&
@@ -64,7 +62,7 @@ export class SavedObjectsSerializer {
    */
   public rawToSavedObject(doc: SavedObjectsRawDoc): SavedObjectSanitizedDoc {
     const { _id, _source, _seq_no, _primary_term } = doc;
-    const { type, namespace } = _source;
+    const { type, namespace, namespaces, originId } = _source;
 
     const version =
       _seq_no != null || _primary_term != null
@@ -74,7 +72,9 @@ export class SavedObjectsSerializer {
     return {
       type,
       id: this.trimIdPrefix(namespace, type, _id),
-      ...(namespace && !this.registry.isNamespaceAgnostic(type) && { namespace }),
+      ...(namespace && this.registry.isSingleNamespace(type) && { namespace }),
+      ...(namespaces && this.registry.isMultiNamespace(type) && { namespaces }),
+      ...(originId && { originId }),
       attributes: _source[type],
       references: _source.references || [],
       ...(_source.migrationVersion && { migrationVersion: _source.migrationVersion }),
@@ -93,8 +93,11 @@ export class SavedObjectsSerializer {
       id,
       type,
       namespace,
+      namespaces,
+      originId,
       attributes,
       migrationVersion,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       updated_at,
       version,
       references,
@@ -103,7 +106,9 @@ export class SavedObjectsSerializer {
       [type]: attributes,
       type,
       references,
-      ...(namespace && !this.registry.isNamespaceAgnostic(type) && { namespace }),
+      ...(namespace && this.registry.isSingleNamespace(type) && { namespace }),
+      ...(namespaces && this.registry.isMultiNamespace(type) && { namespaces }),
+      ...(originId && { originId }),
       ...(migrationVersion && { migrationVersion }),
       ...(updated_at && { updated_at }),
     };
@@ -124,7 +129,7 @@ export class SavedObjectsSerializer {
    */
   public generateRawId(namespace: string | undefined, type: string, id?: string) {
     const namespacePrefix =
-      namespace && !this.registry.isNamespaceAgnostic(type) ? `${namespace}:` : '';
+      namespace && this.registry.isSingleNamespace(type) ? `${namespace}:` : '';
     return `${namespacePrefix}${type}:${id || uuid.v1()}`;
   }
 
@@ -133,7 +138,7 @@ export class SavedObjectsSerializer {
     assertNonEmptyString(type, 'saved object type');
 
     const namespacePrefix =
-      namespace && !this.registry.isNamespaceAgnostic(type) ? `${namespace}:` : '';
+      namespace && this.registry.isSingleNamespace(type) ? `${namespace}:` : '';
     const prefix = `${namespacePrefix}${type}:`;
 
     if (!id.startsWith(prefix)) {

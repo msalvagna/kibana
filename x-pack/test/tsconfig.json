@@ -1,9 +1,11 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "tsBuildInfoFile": "../../build/tsbuildinfo/x-pack/test",
     "types": [
       "mocha",
-      "node"
+      "node",
+      "flot"
     ]
   },
   "include": [
@@ -12,5 +14,8 @@
   ],
   "exclude": [
     "../typings/jest.d.ts"
+  ],
+  "references": [
+    { "path": "../../src/core/tsconfig.json" }
   ]
 }

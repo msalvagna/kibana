@@ -17,27 +17,14 @@
  * under the License.
  */
 
-import { EnvironmentMode, PackageInfo } from 'kibana/server';
 import { KibanaLegacyPlugin } from './plugin';
 
 export type Setup = jest.Mocked<ReturnType<KibanaLegacyPlugin['setup']>>;
 export type Start = jest.Mocked<ReturnType<KibanaLegacyPlugin['start']>>;
 
-const createSetupContract = (): Setup => ({
-  forwardApp: jest.fn(),
-  registerLegacyApp: jest.fn(),
-  config: {
-    defaultAppId: 'home',
-  },
-  env: {} as {
-    mode: Readonly<EnvironmentMode>;
-    packageInfo: Readonly<PackageInfo>;
-  },
-});
+const createSetupContract = (): Setup => ({});
 
 const createStartContract = (): Start => ({
-  getApps: jest.fn(),
-  getForwards: jest.fn(),
   config: {
     defaultAppId: 'home',
   },
@@ -45,6 +32,7 @@ const createStartContract = (): Start => ({
     turnHideWriteControlsOn: jest.fn(),
     getHideWriteControls: jest.fn(),
   },
+  loadFontAwesome: jest.fn(),
 });
 
 export const kibanaLegacyPluginMock = {

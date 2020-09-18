@@ -6,12 +6,13 @@
 import {
   EuiButton,
   EuiButtonEmpty,
-  EuiFieldText,
+  EuiFieldPassword,
   EuiFlexGroup,
   EuiFlexItem,
   EuiForm,
   EuiFormRow,
 } from '@elastic/eui';
+import _ from 'lodash';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
 import React, { ChangeEvent, Component } from 'react';
@@ -23,7 +24,7 @@ interface Props {
   user: User;
   isUserChangingOwnPassword: boolean;
   onChangePassword?: () => void;
-  apiClient: PublicMethodsOf<UserAPIClient>;
+  userAPIClient: PublicMethodsOf<UserAPIClient>;
   notifications: NotificationsStart;
 }
 
@@ -71,10 +72,10 @@ export class ChangePasswordForm extends Component<Props, State> {
               />
             }
           >
-            <EuiFieldText
+            <EuiFieldPassword
               autoComplete="off"
               data-test-subj="currentPassword"
-              type="password"
+              type="dual"
               value={this.state.currentPassword}
               onChange={this.onCurrentPasswordChange}
               disabled={this.state.changeInProgress}
@@ -99,10 +100,10 @@ export class ChangePasswordForm extends Component<Props, State> {
             />
           }
         >
-          <EuiFieldText
+          <EuiFieldPassword
             autoComplete="new-password"
             data-test-subj="newPassword"
-            type="password"
+            type="dual"
             value={this.state.newPassword}
             onChange={this.onNewPasswordChange}
             disabled={this.state.changeInProgress}
@@ -119,10 +120,10 @@ export class ChangePasswordForm extends Component<Props, State> {
             />
           }
         >
-          <EuiFieldText
+          <EuiFieldPassword
             autoComplete="new-password"
             data-test-subj="confirmNewPassword"
-            type="password"
+            type="dual"
             value={this.state.confirmPassword}
             onChange={this.onConfirmPasswordChange}
             disabled={this.state.changeInProgress}
@@ -267,7 +268,7 @@ export class ChangePasswordForm extends Component<Props, State> {
       this.validateConfirmPassword(true),
     ];
 
-    const firstFailure = validation.find(result => result.isInvalid);
+    const firstFailure = validation.find((result) => result.isInvalid);
     if (firstFailure) {
       return firstFailure;
     }
@@ -279,7 +280,7 @@ export class ChangePasswordForm extends Component<Props, State> {
 
   private performPasswordChange = async () => {
     try {
-      await this.props.apiClient.changePassword(
+      await this.props.userAPIClient.changePassword(
         this.props.user.username,
         this.state.newPassword,
         this.state.currentPassword

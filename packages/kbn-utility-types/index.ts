@@ -18,7 +18,7 @@
  */
 
 import { PromiseType } from 'utility-types';
-export { $Values, Required, Optional, Class } from 'utility-types';
+export { $Values, Assign, Class, Optional, Required } from 'utility-types';
 
 /**
  * A type that may or may not be a `Promise`.
@@ -61,7 +61,8 @@ export type Ensure<T, X> = T extends X ? T : never;
 
 // If we define this inside RecursiveReadonly TypeScript complains.
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface RecursiveReadonlyArray<T> extends Array<RecursiveReadonly<T>> {}
+export interface RecursiveReadonlyArray<T> extends ReadonlyArray<RecursiveReadonly<T>> {}
+
 export type RecursiveReadonly<T> = T extends (...args: any) => any
   ? T
   : T extends any[]
@@ -82,9 +83,9 @@ export type Values<T> = T extends any[] ? T[number] : T extends object ? T[keyof
  * type.  This is necessary in the case of distinguishing one collection from
  * another.
  */
-export type UnionToIntersection<U> = (U extends any
-? (k: U) => void
-: never) extends (k: infer I) => void
+export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I
+) => void
   ? I
   : never;
 
@@ -97,3 +98,15 @@ export type PublicKeys<T> = keyof T;
  * Returns an object with public keys only.
  */
 export type PublicContract<T> = Pick<T, PublicKeys<T>>;
+
+/**
+ * Returns public method names
+ */
+export type MethodKeysOf<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
+}[keyof T];
+
+/**
+ *  Returns an object with public methods only.
+ */
+export type PublicMethodsOf<T> = Pick<T, MethodKeysOf<T>>;

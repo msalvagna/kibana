@@ -7,7 +7,7 @@
 import {
   Setup,
   SetupTimeRange,
-  SetupUIFilters
+  SetupUIFilters,
 } from '../../helpers/setup_request';
 import { fetcher } from './fetcher';
 
@@ -15,12 +15,16 @@ describe('fetcher', () => {
   it('performs a search', async () => {
     const search = jest.fn();
     const setup = ({
-      client: { search },
+      apmEventClient: { search },
       indices: {},
-      uiFiltersES: []
+      uiFiltersES: [],
     } as unknown) as Setup & SetupTimeRange & SetupUIFilters;
 
-    await fetcher({ serviceName: 'testServiceName', setup });
+    await fetcher({
+      serviceName: 'testServiceName',
+      setup,
+      searchAggregatedTransactions: false,
+    });
 
     expect(search).toHaveBeenCalled();
   });

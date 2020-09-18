@@ -40,11 +40,6 @@ import React from 'react';
 import { EuiText } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 
-// TODO: can't import from '../../../../legacy/core_plugins/visualizations/public/' directly,
-// because yarn build:types fails after trying to emit type declarations for whole visualizations plugin
-// Bunch of errors like this: 'Return type of exported function has or is using private name 'SavedVis''
-import { VISUALIZE_EMBEDDABLE_TYPE } from '../../../../legacy/core_plugins/visualizations/public/np_ready/public/embeddable/constants';
-
 export interface OnSaveProps {
   newTitle: string;
   newCopyOnSave: boolean;
@@ -58,13 +53,15 @@ interface Props {
   onClose: () => void;
   title: string;
   showCopyOnSave: boolean;
+  initialCopyOnSave?: boolean;
   objectType: string;
   confirmButtonLabel?: React.ReactNode;
-  options?: React.ReactNode;
+  options?: React.ReactNode | ((state: SaveModalState) => React.ReactNode);
   description?: string;
+  showDescription: boolean;
 }
 
-interface State {
+export interface SaveModalState {
   title: string;
   copyOnSave: boolean;
   isTitleDuplicateConfirmed: boolean;
@@ -75,11 +72,11 @@ interface State {
 
 const generateId = htmlIdGenerator();
 
-export class SavedObjectSaveModal extends React.Component<Props, State> {
+export class SavedObjectSaveModal extends React.Component<Props, SaveModalState> {
   private warning = React.createRef<HTMLDivElement>();
   public readonly state = {
     title: this.props.title,
-    copyOnSave: false,
+    copyOnSave: Boolean(this.props.initialCopyOnSave),
     isTitleDuplicateConfirmed: false,
     hasTitleDuplicate: false,
     isLoading: false,
@@ -112,7 +109,7 @@ export class SavedObjectSaveModal extends React.Component<Props, State> {
               {this.renderDuplicateTitleCallout(duplicateWarningId)}
 
               <EuiForm>
-                {this.props.objectType !== VISUALIZE_EMBEDDABLE_TYPE && this.props.description && (
+                {!this.props.showDescription && this.props.description && (
                   <EuiFormRow>
                     <EuiText color="subdued">{this.props.description}</EuiText>
                   </EuiFormRow>
@@ -143,7 +140,9 @@ export class SavedObjectSaveModal extends React.Component<Props, State> {
 
                 {this.renderViewDescription()}
 
-                {this.props.options}
+                {typeof this.props.options === 'function'
+                  ? this.props.options(this.state)
+                  : this.props.options}
               </EuiForm>
             </EuiModalBody>
 
@@ -164,7 +163,7 @@ export class SavedObjectSaveModal extends React.Component<Props, State> {
   }
 
   private renderViewDescription = () => {
-    if (this.props.objectType !== VISUALIZE_EMBEDDABLE_TYPE) {
+    if (!this.props.showDescription) {
       return;
     }
 
@@ -282,8 +281,8 @@ export class SavedObjectSaveModal extends React.Component<Props, State> {
             title={
               <FormattedMessage
                 id="savedObjects.saveModal.duplicateTitleLabel"
-                defaultMessage="A {objectType} with the title '{title}' already exists"
-                values={{ objectType: this.props.objectType, title: this.state.title }}
+                defaultMessage="This {objectType} already exists"
+                values={{ objectType: this.props.objectType }}
               />
             }
             color="warning"
@@ -293,18 +292,9 @@ export class SavedObjectSaveModal extends React.Component<Props, State> {
             <p>
               <FormattedMessage
                 id="savedObjects.saveModal.duplicateTitleDescription"
-                defaultMessage="Clicking {confirmSaveLabel} overwrites the existing {objectType}."
+                defaultMessage="Saving '{title}' creates a duplicate title."
                 values={{
-                  objectType: this.props.objectType,
-                  confirmSaveLabel: (
-                    <strong>
-                      {this.props.confirmButtonLabel
-                        ? this.props.confirmButtonLabel
-                        : i18n.translate('savedObjects.saveModal.saveButtonLabel', {
-                            defaultMessage: 'Save',
-                          })}
-                    </strong>
-                  ),
+                  title: this.state.title,
                 }}
               />
             </p>

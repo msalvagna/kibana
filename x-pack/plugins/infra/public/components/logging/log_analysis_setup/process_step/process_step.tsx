@@ -36,11 +36,11 @@ export const createProcessStep = (props: ProcessStepProps): EuiContainedStepProp
   title: processStepTitle,
   children: <ProcessStep {...props} />,
   status:
-    props.setupStatus === 'pending'
+    props.setupStatus.type === 'pending'
       ? 'incomplete'
-      : props.setupStatus === 'failed'
+      : props.setupStatus.type === 'failed'
       ? 'danger'
-      : props.setupStatus === 'succeeded'
+      : props.setupStatus.type === 'succeeded'
       ? 'complete'
       : undefined,
 });
@@ -55,7 +55,7 @@ export const ProcessStep: React.FunctionComponent<ProcessStepProps> = ({
 }) => {
   return (
     <EuiText size="s">
-      {setupStatus === 'pending' ? (
+      {setupStatus.type === 'pending' ? (
         <EuiFlexGroup alignItems="center">
           <EuiFlexItem grow={false}>
             <EuiLoadingSpinner size="xl" />
@@ -67,7 +67,7 @@ export const ProcessStep: React.FunctionComponent<ProcessStepProps> = ({
             />
           </EuiFlexItem>
         </EuiFlexGroup>
-      ) : setupStatus === 'failed' ? (
+      ) : setupStatus.type === 'failed' ? (
         <>
           <FormattedMessage
             id="xpack.infra.analysisSetup.steps.setupProcess.failureText"
@@ -87,7 +87,7 @@ export const ProcessStep: React.FunctionComponent<ProcessStepProps> = ({
             />
           </EuiButton>
         </>
-      ) : setupStatus === 'succeeded' ? (
+      ) : setupStatus.type === 'succeeded' ? (
         <>
           <FormattedMessage
             id="xpack.infra.analysisSetup.steps.setupProcess.successText"
@@ -101,10 +101,10 @@ export const ProcessStep: React.FunctionComponent<ProcessStepProps> = ({
             />
           </EuiButton>
         </>
-      ) : setupStatus === 'requiredForUpdate' || setupStatus === 'requiredForReconfiguration' ? (
-        <RecreateMLJobsButton isDisabled={!isConfigurationValid} onClick={cleanUpAndSetUp} />
-      ) : (
+      ) : setupStatus.type === 'required' ? (
         <CreateMLJobsButton isDisabled={!isConfigurationValid} onClick={setUp} />
+      ) : (
+        <RecreateMLJobsButton isDisabled={!isConfigurationValid} onClick={cleanUpAndSetUp} />
       )}
     </EuiText>
   );

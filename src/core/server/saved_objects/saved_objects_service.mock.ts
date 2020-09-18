@@ -17,6 +17,9 @@
  * under the License.
  */
 
+import { BehaviorSubject } from 'rxjs';
+import type { PublicMethodsOf } from '@kbn/utility-types';
+
 import {
   SavedObjectsService,
   InternalSavedObjectsServiceSetup,
@@ -24,11 +27,12 @@ import {
   SavedObjectsServiceSetup,
   SavedObjectsServiceStart,
 } from './saved_objects_service';
-import { mockKibanaMigrator } from './migrations/kibana/kibana_migrator.mock';
-import { savedObjectsClientProviderMock } from './service/lib/scoped_client_provider.mock';
+
 import { savedObjectsRepositoryMock } from './service/lib/repository.mock';
 import { savedObjectsClientMock } from './service/saved_objects_client.mock';
 import { typeRegistryMock } from './saved_objects_type_registry.mock';
+import { migrationMocks } from './migrations/mocks';
+import { ServiceStatusLevels } from '../status';
 
 type SavedObjectsServiceContract = PublicMethodsOf<SavedObjectsService>;
 
@@ -50,11 +54,7 @@ const createStartContractMock = () => {
 };
 
 const createInternalStartContractMock = () => {
-  const internalStartContract: jest.Mocked<InternalSavedObjectsServiceStart> = {
-    ...createStartContractMock(),
-    clientProvider: savedObjectsClientProviderMock.create(),
-    migrator: mockKibanaMigrator.create(),
-  };
+  const internalStartContract: jest.Mocked<InternalSavedObjectsServiceStart> = createStartContractMock();
 
   return internalStartContract;
 };
@@ -64,7 +64,10 @@ const createSetupContractMock = () => {
     setClientFactoryProvider: jest.fn(),
     addClientWrapper: jest.fn(),
     registerType: jest.fn(),
+    getImportExportObjectLimit: jest.fn(),
   };
+
+  setupContract.getImportExportObjectLimit.mockReturnValue(100);
 
   return setupContract;
 };
@@ -72,6 +75,10 @@ const createSetupContractMock = () => {
 const createInternalSetupContractMock = () => {
   const internalSetupContract: jest.Mocked<InternalSavedObjectsServiceSetup> = {
     ...createSetupContractMock(),
+    status$: new BehaviorSubject({
+      level: ServiceStatusLevels.available,
+      summary: `SavedObjects is available`,
+    }),
   };
   return internalSetupContract;
 };
@@ -95,4 +102,6 @@ export const savedObjectsServiceMock = {
   createSetupContract: createSetupContractMock,
   createInternalStartContract: createInternalStartContractMock,
   createStartContract: createStartContractMock,
+  createMigrationContext: migrationMocks.createContext,
+  createTypeRegistryMock: typeRegistryMock.create,
 };

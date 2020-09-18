@@ -1,22 +1,23 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    "tsBuildInfoFile": "../build/tsbuildinfo/test",
     "types": [
       "node",
-      "mocha"
-    ],
-    "lib": [
-      "esnext",
-      "dom"
+      "mocha",
+      "flot"
     ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "../typings/lodash.topath/*.ts",
+    "**/*",
+    "../typings/elastic__node_crypto.d.ts",
     "typings/**/*"
   ],
   "exclude": [
-    "plugin_functional/plugins/**/*"
+    "plugin_functional/plugins/**/*",
+    "interpreter_functional/plugins/**/*"
+  ],
+  "references": [
+    { "path": "../src/core/tsconfig.json" }
   ]
 }

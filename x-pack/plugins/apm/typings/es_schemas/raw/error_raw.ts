@@ -12,9 +12,10 @@ import { Kubernetes } from './fields/kubernetes';
 import { Page } from './fields/page';
 import { Process } from './fields/process';
 import { Service } from './fields/service';
-import { IStackframe } from './fields/stackframe';
+import { Stackframe } from './fields/stackframe';
 import { Url } from './fields/url';
 import { User } from './fields/user';
+import { Observer } from './fields/observer';
 
 interface Processor {
   name: 'error';
@@ -22,16 +23,20 @@ interface Processor {
 }
 
 export interface Exception {
+  attributes?: {
+    response?: string;
+  };
+  code?: string;
   message?: string; // either message or type are given
   type?: string;
   module?: string;
   handled?: boolean;
-  stacktrace?: IStackframe[];
+  stacktrace?: Stackframe[];
 }
 
 interface Log {
   message: string;
-  stacktrace?: IStackframe[];
+  stacktrace?: Stackframe[];
 }
 
 export interface ErrorRaw extends APMBaseDoc {
@@ -61,4 +66,5 @@ export interface ErrorRaw extends APMBaseDoc {
   service: Service;
   url?: Url;
   user?: User;
+  observer?: Observer;
 }

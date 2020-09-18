@@ -18,7 +18,7 @@
  */
 
 import React, { PureComponent, Fragment } from 'react';
-import classNames from 'classnames';
+
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -44,7 +44,6 @@ import { Field, getEditableValue } from '../field';
 import { FieldSetting, SettingsChanges, FieldState } from '../../types';
 
 type Category = string;
-const NAV_IS_LOCKED_KEY = 'core.chrome.isLocked';
 
 interface FormProps {
   settings: Record<string, FieldSetting[]>;
@@ -81,7 +80,7 @@ export class Form extends PureComponent<FormProps> {
   getSettingByKey = (key: string): FieldSetting | undefined => {
     return Object.values(this.props.settings)
       .flat()
-      .find(el => el.name === key);
+      .find((el) => el.name === key);
   };
 
   getCountOfUnsavedChanges = (): number => {
@@ -91,8 +90,8 @@ export class Form extends PureComponent<FormProps> {
   getCountOfHiddenUnsavedChanges = (): number => {
     const shownSettings = Object.values(this.props.visibleSettings)
       .flat()
-      .map(setting => setting.name);
-    return Object.keys(this.state.unsavedChanges).filter(key => !shownSettings.includes(key))
+      .map((setting) => setting.name);
+    return Object.keys(this.state.unsavedChanges).filter((key) => !shownSettings.includes(key))
       .length;
   };
 
@@ -255,7 +254,7 @@ export class Form extends PureComponent<FormProps> {
               </EuiFlexGroup>
             </EuiText>
             <EuiSpacer size="m" />
-            {settings.map(setting => {
+            {settings.map((setting) => {
               return (
                 <Field
                   key={setting.name}
@@ -325,60 +324,58 @@ export class Form extends PureComponent<FormProps> {
 
   renderBottomBar = () => {
     const areChangesInvalid = this.areChangesInvalid();
-    const bottomBarClasses = classNames('mgtAdvancedSettingsForm__bottomBar', {
-      'mgtAdvancedSettingsForm__bottomBar--pushForNav':
-        localStorage.getItem(NAV_IS_LOCKED_KEY) === 'true',
-    });
     return (
-      <EuiBottomBar className={bottomBarClasses} data-test-subj="advancedSetting-bottomBar">
-        <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
+      <EuiBottomBar data-test-subj="advancedSetting-bottomBar">
+        <EuiFlexGroup
+          justifyContent="spaceBetween"
+          alignItems="center"
+          responsive={false}
+          gutterSize="s"
+        >
           <EuiFlexItem grow={false} className="mgtAdvancedSettingsForm__unsavedCount">
             <p id="aria-describedby.countOfUnsavedSettings">{this.renderCountOfUnsaved()}</p>
           </EuiFlexItem>
+          <EuiFlexItem />
           <EuiFlexItem grow={false}>
-            <EuiFlexGroup gutterSize="s">
-              <EuiFlexItem grow={false}>
-                <EuiButtonEmpty
-                  color="ghost"
-                  size="s"
-                  iconType="cross"
-                  onClick={this.clearAllUnsaved}
-                  aria-describedby="aria-describedby.countOfUnsavedSettings"
-                  data-test-subj="advancedSetting-cancelButton"
-                >
-                  {i18n.translate('advancedSettings.form.cancelButtonLabel', {
-                    defaultMessage: 'Cancel changes',
-                  })}
-                </EuiButtonEmpty>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiToolTip
-                  content={
-                    areChangesInvalid &&
-                    i18n.translate('advancedSettings.form.saveButtonTooltipWithInvalidChanges', {
-                      defaultMessage: 'Fix invalid settings before saving.',
-                    })
-                  }
-                >
-                  <EuiButton
-                    className="mgtAdvancedSettingsForm__button"
-                    disabled={areChangesInvalid}
-                    color="secondary"
-                    fill
-                    size="s"
-                    iconType="check"
-                    onClick={this.saveAll}
-                    aria-describedby="aria-describedby.countOfUnsavedSettings"
-                    isLoading={this.state.loading}
-                    data-test-subj="advancedSetting-saveButton"
-                  >
-                    {i18n.translate('advancedSettings.form.saveButtonLabel', {
-                      defaultMessage: 'Save changes',
-                    })}
-                  </EuiButton>
-                </EuiToolTip>
-              </EuiFlexItem>
-            </EuiFlexGroup>
+            <EuiButtonEmpty
+              color="ghost"
+              size="s"
+              iconType="cross"
+              onClick={this.clearAllUnsaved}
+              aria-describedby="aria-describedby.countOfUnsavedSettings"
+              data-test-subj="advancedSetting-cancelButton"
+            >
+              {i18n.translate('advancedSettings.form.cancelButtonLabel', {
+                defaultMessage: 'Cancel changes',
+              })}
+            </EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiToolTip
+              content={
+                areChangesInvalid &&
+                i18n.translate('advancedSettings.form.saveButtonTooltipWithInvalidChanges', {
+                  defaultMessage: 'Fix invalid settings before saving.',
+                })
+              }
+            >
+              <EuiButton
+                className="mgtAdvancedSettingsForm__button"
+                disabled={areChangesInvalid}
+                color="secondary"
+                fill
+                size="s"
+                iconType="check"
+                onClick={this.saveAll}
+                aria-describedby="aria-describedby.countOfUnsavedSettings"
+                isLoading={this.state.loading}
+                data-test-subj="advancedSetting-saveButton"
+              >
+                {i18n.translate('advancedSettings.form.saveButtonLabel', {
+                  defaultMessage: 'Save changes',
+                })}
+              </EuiButton>
+            </EuiToolTip>
           </EuiFlexItem>
         </EuiFlexGroup>
       </EuiBottomBar>
@@ -390,7 +387,7 @@ export class Form extends PureComponent<FormProps> {
     const { visibleSettings, categories, categoryCounts, clearQuery } = this.props;
     const currentCategories: Category[] = [];
 
-    categories.forEach(category => {
+    categories.forEach((category) => {
       if (visibleSettings[category] && visibleSettings[category].length) {
         currentCategories.push(category);
       }
@@ -400,7 +397,7 @@ export class Form extends PureComponent<FormProps> {
       <Fragment>
         <div>
           {currentCategories.length
-            ? currentCategories.map(category => {
+            ? currentCategories.map((category) => {
                 return this.renderCategory(
                   category,
                   visibleSettings[category],

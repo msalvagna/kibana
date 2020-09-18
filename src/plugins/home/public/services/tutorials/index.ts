@@ -21,5 +21,7 @@ export {
   TutorialService,
   TutorialVariables,
   TutorialServiceSetup,
-  TutorialServiceStart,
+  TutorialDirectoryNoticeComponent,
+  TutorialDirectoryHeaderLinkComponent,
+  TutorialModuleNoticeComponent,
 } from './tutorial_service';

@@ -15,9 +15,15 @@ exports[`Field for array setting should render as read only if saving is disable
     </React.Fragment>
   }
   fullWidth={true}
+  id="array:test:setting"
   title={
     <h3>
-      Array test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Array test setting
+      </span>
+      
       
     </h3>
   }
@@ -82,9 +88,15 @@ exports[`Field for array setting should render as read only with help text if ov
     </React.Fragment>
   }
   fullWidth={true}
+  id="array:test:setting"
   title={
     <h3>
-      Array test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Array test setting
+      </span>
+      
       
     </h3>
   }
@@ -137,9 +149,14 @@ exports[`Field for array setting should render custom setting icon if it is cust
     </React.Fragment>
   }
   fullWidth={true}
+  id="array:test:setting"
   title={
     <h3>
-      Array test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Array test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -152,6 +169,7 @@ exports[`Field for array setting should render custom setting icon if it is cust
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -193,9 +211,15 @@ exports[`Field for array setting should render default value if there is no user
     </React.Fragment>
   }
   fullWidth={true}
+  id="array:test:setting"
   title={
     <h3>
-      Array test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Array test setting
+      </span>
+      
       
     </h3>
   }
@@ -238,9 +262,14 @@ exports[`Field for array setting should render unsaved value if there are unsave
     </React.Fragment>
   }
   fullWidth={true}
+  id="array:test:setting"
   title={
     <h3>
-      Array test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Array test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -252,6 +281,13 @@ exports[`Field for array setting should render unsaved value if there are unsave
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -328,9 +364,15 @@ exports[`Field for array setting should render user value if there is user value
     </React.Fragment>
   }
   fullWidth={true}
+  id="array:test:setting"
   title={
     <h3>
-      Array test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Array test setting
+      </span>
+      
       
     </h3>
   }
@@ -345,7 +387,7 @@ exports[`Field for array setting should render user value if there is user value
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset array test setting to default"
             data-test-subj="advancedSetting-resetField-array:test:setting"
             onClick={[Function]}
@@ -355,7 +397,7 @@ exports[`Field for array setting should render user value if there is user value
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>
@@ -390,9 +432,15 @@ exports[`Field for boolean setting should render as read only if saving is disab
     </React.Fragment>
   }
   fullWidth={true}
+  id="boolean:test:setting"
   title={
     <h3>
-      Boolean test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Boolean test setting
+      </span>
+      
       
     </h3>
   }
@@ -463,9 +511,15 @@ exports[`Field for boolean setting should render as read only with help text if 
     </React.Fragment>
   }
   fullWidth={true}
+  id="boolean:test:setting"
   title={
     <h3>
-      Boolean test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Boolean test setting
+      </span>
+      
       
     </h3>
   }
@@ -524,9 +578,14 @@ exports[`Field for boolean setting should render custom setting icon if it is cu
     </React.Fragment>
   }
   fullWidth={true}
+  id="boolean:test:setting"
   title={
     <h3>
-      Boolean test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Boolean test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -539,6 +598,7 @@ exports[`Field for boolean setting should render custom setting icon if it is cu
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -586,9 +646,15 @@ exports[`Field for boolean setting should render default value if there is no us
     </React.Fragment>
   }
   fullWidth={true}
+  id="boolean:test:setting"
   title={
     <h3>
-      Boolean test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Boolean test setting
+      </span>
+      
       
     </h3>
   }
@@ -637,9 +703,14 @@ exports[`Field for boolean setting should render unsaved value if there are unsa
     </React.Fragment>
   }
   fullWidth={true}
+  id="boolean:test:setting"
   title={
     <h3>
-      Boolean test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Boolean test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -651,6 +722,13 @@ exports[`Field for boolean setting should render unsaved value if there are unsa
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -729,9 +807,15 @@ exports[`Field for boolean setting should render user value if there is user val
     </React.Fragment>
   }
   fullWidth={true}
+  id="boolean:test:setting"
   title={
     <h3>
-      Boolean test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Boolean test setting
+      </span>
+      
       
     </h3>
   }
@@ -746,7 +830,7 @@ exports[`Field for boolean setting should render user value if there is user val
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset boolean test setting to default"
             data-test-subj="advancedSetting-resetField-boolean:test:setting"
             onClick={[Function]}
@@ -756,7 +840,7 @@ exports[`Field for boolean setting should render user value if there is user val
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>
@@ -797,9 +881,15 @@ exports[`Field for image setting should render as read only if saving is disable
     </React.Fragment>
   }
   fullWidth={true}
+  id="image:test:setting"
   title={
     <h3>
-      Image test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Image test setting
+      </span>
+      
       
     </h3>
   }
@@ -866,9 +956,15 @@ exports[`Field for image setting should render as read only with help text if ov
     </React.Fragment>
   }
   fullWidth={true}
+  id="image:test:setting"
   title={
     <h3>
-      Image test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Image test setting
+      </span>
+      
       
     </h3>
   }
@@ -919,9 +1015,14 @@ exports[`Field for image setting should render custom setting icon if it is cust
     </React.Fragment>
   }
   fullWidth={true}
+  id="image:test:setting"
   title={
     <h3>
-      Image test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Image test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -934,6 +1035,7 @@ exports[`Field for image setting should render custom setting icon if it is cust
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -977,9 +1079,15 @@ exports[`Field for image setting should render default value if there is no user
     </React.Fragment>
   }
   fullWidth={true}
+  id="image:test:setting"
   title={
     <h3>
-      Image test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Image test setting
+      </span>
+      
       
     </h3>
   }
@@ -1024,9 +1132,14 @@ exports[`Field for image setting should render unsaved value if there are unsave
     </React.Fragment>
   }
   fullWidth={true}
+  id="image:test:setting"
   title={
     <h3>
-      Image test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Image test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -1038,6 +1151,13 @@ exports[`Field for image setting should render unsaved value if there are unsave
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -1111,9 +1231,15 @@ exports[`Field for image setting should render user value if there is user value
     </React.Fragment>
   }
   fullWidth={true}
+  id="image:test:setting"
   title={
     <h3>
-      Image test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Image test setting
+      </span>
+      
       
     </h3>
   }
@@ -1128,7 +1254,7 @@ exports[`Field for image setting should render user value if there is user value
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset image test setting to default"
             data-test-subj="advancedSetting-resetField-image:test:setting"
             onClick={[Function]}
@@ -1138,11 +1264,11 @@ exports[`Field for image setting should render user value if there is user value
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Change image test setting"
             data-test-subj="advancedSetting-changeImage-image:test:setting"
             onClick={[Function]}
@@ -1152,7 +1278,7 @@ exports[`Field for image setting should render user value if there is user value
               id="advancedSettings.field.changeImageLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
         </span>
       </span>
     }
@@ -1209,9 +1335,15 @@ exports[`Field for json setting should render as read only if saving is disabled
     </React.Fragment>
   }
   fullWidth={true}
+  id="json:test:setting"
   title={
     <h3>
-      Json test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Json test setting
+      </span>
+      
       
     </h3>
   }
@@ -1237,7 +1369,6 @@ exports[`Field for json setting should render as read only if saving is disabled
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={true}
         maxLines={30}
@@ -1300,9 +1431,15 @@ exports[`Field for json setting should render as read only with help text if ove
     </React.Fragment>
   }
   fullWidth={true}
+  id="json:test:setting"
   title={
     <h3>
-      Json test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Json test setting
+      </span>
+      
       
     </h3>
   }
@@ -1338,7 +1475,6 @@ exports[`Field for json setting should render as read only with help text if ove
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={true}
         maxLines={30}
@@ -1376,9 +1512,14 @@ exports[`Field for json setting should render custom setting icon if it is custo
     </React.Fragment>
   }
   fullWidth={true}
+  id="json:test:setting"
   title={
     <h3>
-      Json test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Json test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -1391,6 +1532,7 @@ exports[`Field for json setting should render custom setting icon if it is custo
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -1415,7 +1557,6 @@ exports[`Field for json setting should render custom setting icon if it is custo
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={false}
         maxLines={30}
@@ -1478,9 +1619,15 @@ exports[`Field for json setting should render default value if there is no user 
     </React.Fragment>
   }
   fullWidth={true}
+  id="json:test:setting"
   title={
     <h3>
-      Json test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Json test setting
+      </span>
+      
       
     </h3>
   }
@@ -1495,7 +1642,7 @@ exports[`Field for json setting should render default value if there is no user 
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset json test setting to default"
             data-test-subj="advancedSetting-resetField-json:test:setting"
             onClick={[Function]}
@@ -1505,7 +1652,7 @@ exports[`Field for json setting should render default value if there is no user 
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>
@@ -1523,7 +1670,6 @@ exports[`Field for json setting should render default value if there is no user 
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={false}
         maxLines={30}
@@ -1561,9 +1707,14 @@ exports[`Field for json setting should render unsaved value if there are unsaved
     </React.Fragment>
   }
   fullWidth={true}
+  id="json:test:setting"
   title={
     <h3>
-      Json test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Json test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -1575,6 +1726,13 @@ exports[`Field for json setting should render unsaved value if there are unsaved
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -1601,7 +1759,6 @@ exports[`Field for json setting should render unsaved value if there are unsaved
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={false}
         maxLines={30}
@@ -1675,9 +1832,15 @@ exports[`Field for json setting should render user value if there is user value 
     </React.Fragment>
   }
   fullWidth={true}
+  id="json:test:setting"
   title={
     <h3>
-      Json test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Json test setting
+      </span>
+      
       
     </h3>
   }
@@ -1692,7 +1855,7 @@ exports[`Field for json setting should render user value if there is user value 
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset json test setting to default"
             data-test-subj="advancedSetting-resetField-json:test:setting"
             onClick={[Function]}
@@ -1702,7 +1865,7 @@ exports[`Field for json setting should render user value if there is user value 
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>
@@ -1720,7 +1883,6 @@ exports[`Field for json setting should render user value if there is user value 
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={false}
         maxLines={30}
@@ -1758,9 +1920,15 @@ exports[`Field for markdown setting should render as read only if saving is disa
     </React.Fragment>
   }
   fullWidth={true}
+  id="markdown:test:setting"
   title={
     <h3>
-      Markdown test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Markdown test setting
+      </span>
+      
       
     </h3>
   }
@@ -1786,7 +1954,6 @@ exports[`Field for markdown setting should render as read only if saving is disa
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={true}
         maxLines={30}
@@ -1846,9 +2013,15 @@ exports[`Field for markdown setting should render as read only with help text if
     </React.Fragment>
   }
   fullWidth={true}
+  id="markdown:test:setting"
   title={
     <h3>
-      Markdown test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Markdown test setting
+      </span>
+      
       
     </h3>
   }
@@ -1884,7 +2057,6 @@ exports[`Field for markdown setting should render as read only with help text if
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={true}
         maxLines={30}
@@ -1922,9 +2094,14 @@ exports[`Field for markdown setting should render custom setting icon if it is c
     </React.Fragment>
   }
   fullWidth={true}
+  id="markdown:test:setting"
   title={
     <h3>
-      Markdown test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Markdown test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -1937,6 +2114,7 @@ exports[`Field for markdown setting should render custom setting icon if it is c
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -1961,7 +2139,6 @@ exports[`Field for markdown setting should render custom setting icon if it is c
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={false}
         maxLines={30}
@@ -1999,9 +2176,15 @@ exports[`Field for markdown setting should render default value if there is no u
     </React.Fragment>
   }
   fullWidth={true}
+  id="markdown:test:setting"
   title={
     <h3>
-      Markdown test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Markdown test setting
+      </span>
+      
       
     </h3>
   }
@@ -2027,7 +2210,6 @@ exports[`Field for markdown setting should render default value if there is no u
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={false}
         maxLines={30}
@@ -2065,9 +2247,14 @@ exports[`Field for markdown setting should render unsaved value if there are uns
     </React.Fragment>
   }
   fullWidth={true}
+  id="markdown:test:setting"
   title={
     <h3>
-      Markdown test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Markdown test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -2079,6 +2266,13 @@ exports[`Field for markdown setting should render unsaved value if there are uns
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -2105,7 +2299,6 @@ exports[`Field for markdown setting should render unsaved value if there are uns
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={false}
         maxLines={30}
@@ -2172,9 +2365,15 @@ exports[`Field for markdown setting should render user value if there is user va
     </React.Fragment>
   }
   fullWidth={true}
+  id="markdown:test:setting"
   title={
     <h3>
-      Markdown test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Markdown test setting
+      </span>
+      
       
     </h3>
   }
@@ -2189,7 +2388,7 @@ exports[`Field for markdown setting should render user value if there is user va
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset markdown test setting to default"
             data-test-subj="advancedSetting-resetField-markdown:test:setting"
             onClick={[Function]}
@@ -2199,7 +2398,7 @@ exports[`Field for markdown setting should render user value if there is user va
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>
@@ -2217,7 +2416,6 @@ exports[`Field for markdown setting should render user value if there is user va
             "$blockScrolling": Infinity,
           }
         }
-        fullWidth={true}
         height="auto"
         isReadOnly={false}
         maxLines={30}
@@ -2255,9 +2453,15 @@ exports[`Field for number setting should render as read only if saving is disabl
     </React.Fragment>
   }
   fullWidth={true}
+  id="number:test:setting"
   title={
     <h3>
-      Number test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Number test setting
+      </span>
+      
       
     </h3>
   }
@@ -2322,9 +2526,15 @@ exports[`Field for number setting should render as read only with help text if o
     </React.Fragment>
   }
   fullWidth={true}
+  id="number:test:setting"
   title={
     <h3>
-      Number test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Number test setting
+      </span>
+      
       
     </h3>
   }
@@ -2377,9 +2587,14 @@ exports[`Field for number setting should render custom setting icon if it is cus
     </React.Fragment>
   }
   fullWidth={true}
+  id="number:test:setting"
   title={
     <h3>
-      Number test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Number test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -2392,6 +2607,7 @@ exports[`Field for number setting should render custom setting icon if it is cus
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -2433,9 +2649,15 @@ exports[`Field for number setting should render default value if there is no use
     </React.Fragment>
   }
   fullWidth={true}
+  id="number:test:setting"
   title={
     <h3>
-      Number test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Number test setting
+      </span>
+      
       
     </h3>
   }
@@ -2478,9 +2700,14 @@ exports[`Field for number setting should render unsaved value if there are unsav
     </React.Fragment>
   }
   fullWidth={true}
+  id="number:test:setting"
   title={
     <h3>
-      Number test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Number test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -2492,6 +2719,13 @@ exports[`Field for number setting should render unsaved value if there are unsav
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -2564,9 +2798,15 @@ exports[`Field for number setting should render user value if there is user valu
     </React.Fragment>
   }
   fullWidth={true}
+  id="number:test:setting"
   title={
     <h3>
-      Number test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Number test setting
+      </span>
+      
       
     </h3>
   }
@@ -2581,7 +2821,7 @@ exports[`Field for number setting should render user value if there is user valu
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset number test setting to default"
             data-test-subj="advancedSetting-resetField-number:test:setting"
             onClick={[Function]}
@@ -2591,7 +2831,7 @@ exports[`Field for number setting should render user value if there is user valu
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>
@@ -2626,9 +2866,15 @@ exports[`Field for select setting should render as read only if saving is disabl
     </React.Fragment>
   }
   fullWidth={true}
+  id="select:test:setting"
   title={
     <h3>
-      Select test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Select test setting
+      </span>
+      
       
     </h3>
   }
@@ -2709,9 +2955,15 @@ exports[`Field for select setting should render as read only with help text if o
     </React.Fragment>
   }
   fullWidth={true}
+  id="select:test:setting"
   title={
     <h3>
-      Select test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Select test setting
+      </span>
+      
       
     </h3>
   }
@@ -2780,9 +3032,14 @@ exports[`Field for select setting should render custom setting icon if it is cus
     </React.Fragment>
   }
   fullWidth={true}
+  id="select:test:setting"
   title={
     <h3>
-      Select test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Select test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -2795,6 +3052,7 @@ exports[`Field for select setting should render custom setting icon if it is cus
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -2852,9 +3110,15 @@ exports[`Field for select setting should render default value if there is no use
     </React.Fragment>
   }
   fullWidth={true}
+  id="select:test:setting"
   title={
     <h3>
-      Select test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Select test setting
+      </span>
+      
       
     </h3>
   }
@@ -2913,9 +3177,14 @@ exports[`Field for select setting should render unsaved value if there are unsav
     </React.Fragment>
   }
   fullWidth={true}
+  id="select:test:setting"
   title={
     <h3>
-      Select test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Select test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -2927,6 +3196,13 @@ exports[`Field for select setting should render unsaved value if there are unsav
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -3015,9 +3291,15 @@ exports[`Field for select setting should render user value if there is user valu
     </React.Fragment>
   }
   fullWidth={true}
+  id="select:test:setting"
   title={
     <h3>
-      Select test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        Select test setting
+      </span>
+      
       
     </h3>
   }
@@ -3032,7 +3314,7 @@ exports[`Field for select setting should render user value if there is user valu
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset select test setting to default"
             data-test-subj="advancedSetting-resetField-select:test:setting"
             onClick={[Function]}
@@ -3042,7 +3324,7 @@ exports[`Field for select setting should render user value if there is user valu
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>
@@ -3093,9 +3375,15 @@ exports[`Field for string setting should render as read only if saving is disabl
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test:setting"
   title={
     <h3>
-      String test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test setting
+      </span>
+      
       
     </h3>
   }
@@ -3160,9 +3448,15 @@ exports[`Field for string setting should render as read only with help text if o
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test:setting"
   title={
     <h3>
-      String test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test setting
+      </span>
+      
       
     </h3>
   }
@@ -3215,9 +3509,14 @@ exports[`Field for string setting should render custom setting icon if it is cus
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test:setting"
   title={
     <h3>
-      String test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -3230,6 +3529,7 @@ exports[`Field for string setting should render custom setting icon if it is cus
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -3271,9 +3571,15 @@ exports[`Field for string setting should render default value if there is no use
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test:setting"
   title={
     <h3>
-      String test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test setting
+      </span>
+      
       
     </h3>
   }
@@ -3316,9 +3622,14 @@ exports[`Field for string setting should render unsaved value if there are unsav
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test:setting"
   title={
     <h3>
-      String test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -3330,6 +3641,13 @@ exports[`Field for string setting should render unsaved value if there are unsav
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -3402,9 +3720,15 @@ exports[`Field for string setting should render user value if there is user valu
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test:setting"
   title={
     <h3>
-      String test setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test setting
+      </span>
+      
       
     </h3>
   }
@@ -3419,7 +3743,7 @@ exports[`Field for string setting should render user value if there is user valu
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset string test setting to default"
             data-test-subj="advancedSetting-resetField-string:test:setting"
             onClick={[Function]}
@@ -3429,7 +3753,7 @@ exports[`Field for string setting should render user value if there is user valu
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>
@@ -3464,9 +3788,15 @@ exports[`Field for stringWithValidation setting should render as read only if sa
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test-validation:setting"
   title={
     <h3>
-      String test validation setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test validation setting
+      </span>
+      
       
     </h3>
   }
@@ -3531,9 +3861,15 @@ exports[`Field for stringWithValidation setting should render as read only with 
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test-validation:setting"
   title={
     <h3>
-      String test validation setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test validation setting
+      </span>
+      
       
     </h3>
   }
@@ -3586,9 +3922,14 @@ exports[`Field for stringWithValidation setting should render custom setting ico
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test-validation:setting"
   title={
     <h3>
-      String test validation setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test validation setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -3601,6 +3942,7 @@ exports[`Field for stringWithValidation setting should render custom setting ico
         }
         type="asterisk"
       />
+      
     </h3>
   }
 >
@@ -3642,9 +3984,15 @@ exports[`Field for stringWithValidation setting should render default value if t
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test-validation:setting"
   title={
     <h3>
-      String test validation setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test validation setting
+      </span>
+      
       
     </h3>
   }
@@ -3687,9 +4035,14 @@ exports[`Field for stringWithValidation setting should render unsaved value if t
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test-validation:setting"
   title={
     <h3>
-      String test validation setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test validation setting
+      </span>
       <EuiIconTip
         aria-label="Custom setting"
         color="primary"
@@ -3701,6 +4054,13 @@ exports[`Field for stringWithValidation setting should render unsaved value if t
           />
         }
         type="asterisk"
+      />
+      <EuiIconTip
+        anchorClassName="mgtAdvancedSettings__fieldTitleUnsavedIcon"
+        aria-label="Unsaved"
+        color="warning"
+        content="Unsaved"
+        type="dot"
       />
     </h3>
   }
@@ -3773,9 +4133,15 @@ exports[`Field for stringWithValidation setting should render user value if ther
     </React.Fragment>
   }
   fullWidth={true}
+  id="string:test-validation:setting"
   title={
     <h3>
-      String test validation setting
+      <span
+        className="mgtAdvancedSettings__fieldTitle"
+      >
+        String test validation setting
+      </span>
+      
       
     </h3>
   }
@@ -3790,7 +4156,7 @@ exports[`Field for stringWithValidation setting should render user value if ther
     helpText={
       <span>
         <span>
-          <ForwardRef
+          <EuiLink
             aria-label="Reset string test validation setting to default"
             data-test-subj="advancedSetting-resetField-string:test-validation:setting"
             onClick={[Function]}
@@ -3800,7 +4166,7 @@ exports[`Field for stringWithValidation setting should render user value if ther
               id="advancedSettings.field.resetToDefaultLinkText"
               values={Object {}}
             />
-          </ForwardRef>
+          </EuiLink>
              
         </span>
       </span>

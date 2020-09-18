@@ -4,22 +4,21 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { Transaction } from '../../../../../typings/es_schemas/ui/transaction';
+import { ProcessorEvent } from '../../../../../common/processor_event';
 import {
-  PROCESSOR_EVENT,
   SERVICE_NAME,
   TRACE_ID,
   TRANSACTION_DURATION,
   TRANSACTION_ID,
   TRANSACTION_NAME,
   TRANSACTION_SAMPLED,
-  TRANSACTION_TYPE
+  TRANSACTION_TYPE,
 } from '../../../../../common/elasticsearch_fieldnames';
-import { rangeFilter } from '../../../helpers/range_filter';
+import { rangeFilter } from '../../../../../common/utils/range_filter';
 import {
   Setup,
   SetupTimeRange,
-  SetupUIFilters
+  SetupUIFilters,
 } from '../../../helpers/setup_request';
 
 export async function bucketFetcher(
@@ -32,27 +31,28 @@ export async function bucketFetcher(
   bucketSize: number,
   setup: Setup & SetupTimeRange & SetupUIFilters
 ) {
-  const { start, end, uiFiltersES, client, indices } = setup;
+  const { start, end, uiFiltersES, apmEventClient } = setup;
 
   const params = {
-    index: indices['apm_oss.transactionIndices'],
+    apm: {
+      events: [ProcessorEvent.transaction as const],
+    },
     body: {
       size: 0,
       query: {
         bool: {
           filter: [
             { term: { [SERVICE_NAME]: serviceName } },
-            { term: { [PROCESSOR_EVENT]: 'transaction' } },
             { term: { [TRANSACTION_TYPE]: transactionType } },
             { term: { [TRANSACTION_NAME]: transactionName } },
             { range: rangeFilter(start, end) },
-            ...uiFiltersES
+            ...uiFiltersES,
           ],
           should: [
             { term: { [TRACE_ID]: traceId } },
-            { term: { [TRANSACTION_ID]: transactionId } }
-          ]
-        }
+            { term: { [TRANSACTION_ID]: transactionId } },
+          ],
+        },
       },
       aggs: {
         distribution: {
@@ -62,30 +62,30 @@ export async function bucketFetcher(
             min_doc_count: 0,
             extended_bounds: {
               min: 0,
-              max: distributionMax
-            }
+              max: distributionMax,
+            },
           },
           aggs: {
             samples: {
               filter: {
-                term: { [TRANSACTION_SAMPLED]: true }
+                term: { [TRANSACTION_SAMPLED]: true },
               },
               aggs: {
                 items: {
                   top_hits: {
                     _source: [TRANSACTION_ID, TRACE_ID],
-                    size: 10
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                    size: 10,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   };
 
-  const response = await client.search<Transaction, typeof params>(params);
+  const response = await apmEventClient.search(params);
 
   return response;
 }

@@ -17,6 +17,4 @@
  * under the License.
  */
 
-export * from './types';
-export { fetchSoon } from './fetch_soon';
-export { RequestFailure } from './errors';
+export { handleResponse } from './handle_response';
